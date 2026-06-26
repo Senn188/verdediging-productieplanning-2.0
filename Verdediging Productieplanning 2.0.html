@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdediging Productieplanning 2.0 - Senn Lauwers</title>
+<style>
+  :root{
+    --teal:#279989;
+    --teal-dark:#1d7468;
+    --teal-darker:#155349;
+    --teal-soft:#e8f4f2;
+    --teal-line:#bfe0da;
+    --ink:#15302c;
+    --muted:#5c6f6b;
+    --bg:#ffffff;
+    --magenta:#e6007e;
+    --bad:#d64545;
+    --good:#2e9e5b;
+    --amber:#e0a200;
+    --shadow:0 10px 30px rgba(21,83,73,.12);
+    --radius:16px;
+    --font:'Segoe UI',Roboto,-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{font-family:var(--font);color:var(--ink);background:#0d2420;overflow:hidden;-webkit-font-smoothing:antialiased}
+
+  #deck{position:fixed;inset:0;background:var(--bg);overflow:hidden}
+
+  /* ---------- Slides ---------- */
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;
+    padding:clamp(28px,5vw,90px) clamp(34px,6vw,110px) clamp(70px,8vh,96px);
+    animation:slideIn .5s ease both}
+  .slide.active{display:flex}
+  .slide.dense{justify-content:flex-start;padding-top:clamp(48px,6.5vh,78px)}
+  .slide.dense .accentbar{margin-bottom:clamp(10px,1.8vh,18px)}
+  .slide.dense .sub{margin-bottom:clamp(8px,1.4vh,16px)}
+  @keyframes slideIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  h1,h2,h3{margin:0;line-height:1.1}
+  .eyebrow{font-size:clamp(.7rem,1vw,.85rem);font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--teal);margin-bottom:.5em}
+  .slide h2{font-size:clamp(1.6rem,3.4vw,2.7rem);font-weight:800;letter-spacing:-.01em;margin-bottom:.15em}
+  .slide .sub{color:var(--muted);font-size:clamp(.95rem,1.5vw,1.2rem);margin-bottom:clamp(14px,2.5vh,30px);max-width:60ch}
+  p{line-height:1.45}
+
+  .accentbar{width:64px;height:5px;border-radius:3px;background:var(--teal);margin:0 0 clamp(14px,2.4vh,26px)}
+
+  /* ---------- Fragments ---------- */
+  .fragment{opacity:0;transform:translateY(12px);transition:opacity .45s ease,transform .45s ease}
+  .fragment.vis{opacity:1;transform:none}
+
+  /* ---------- Brand corners ---------- */
+  .brand{position:fixed;top:26px;z-index:30;background:#fff;border-radius:10px;padding:7px 12px;
+    box-shadow:0 2px 10px rgba(21,83,73,.10);display:flex;align-items:center;transition:opacity .4s}
+  #brandTL{left:30px}#brandTR{right:30px}
+  .brand img{display:block;height:30px;width:auto}
+  body.cover .brand{opacity:0;pointer-events:none}
+
+  /* ---------- Bottom bar ---------- */
+  #bottombar{position:fixed;left:0;right:0;bottom:0;height:54px;z-index:25;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:0 clamp(20px,4vw,46px);transition:opacity .4s}
+  body.cover #bottombar{opacity:0;pointer-events:none}
+  #progress{position:fixed;left:0;bottom:0;height:4px;background:var(--teal);width:0;z-index:26;transition:width .45s ease}
+
+  /* PDOVE stepper */
+  #pdove{display:flex;gap:7px;align-items:center}
+  .step{display:flex;align-items:center;gap:7px;font-size:.72rem;font-weight:700}
+  .step .dot{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;
+    background:#eef2f1;color:#9bada9;border:2px solid #e2e8e6;font-weight:800;font-size:.78rem;transition:.3s}
+  .step .lbl{color:#9bada9;letter-spacing:.04em;transition:.3s;display:none}
+  .step.active .lbl{display:inline}
+  .step.done .dot{background:var(--teal-soft);color:var(--teal);border-color:var(--teal-line)}
+  .step.active .dot{background:var(--teal);color:#fff;border-color:var(--teal);transform:scale(1.08)}
+  .step.active .lbl{color:var(--teal)}
+  .step.out .dot{background:repeating-linear-gradient(45deg,#f4f6f5,#f4f6f5 4px,#eceeed 4px,#eceeed 8px);
+    color:#c2cdcb;border-style:dashed}
+  .step.out .lbl{color:#c2cdcb;display:inline;text-decoration:line-through}
+  .step .sep{width:14px;height:2px;background:#e2e8e6;border-radius:2px}
+
+  #counter{font-size:.82rem;font-weight:700;color:var(--muted);letter-spacing:.04em}
+
+  /* ---------- Cover (title) slide ---------- */
+  .cover-slide{background:radial-gradient(120% 120% at 80% -10%,var(--teal) 0%,var(--teal-dark) 45%,var(--teal-darker) 100%);
+    color:#fff;justify-content:center;align-items:flex-start}
+  .cover-slide h1{font-size:clamp(2.4rem,6vw,5rem);font-weight:800;letter-spacing:-.02em}
+  .cover-slide .lead{font-size:clamp(1.05rem,2vw,1.5rem);opacity:.92;margin:.6em 0 0;max-width:30ch}
+  .cover-logos{position:absolute;top:clamp(28px,5vh,52px);left:clamp(34px,6vw,110px);right:clamp(34px,6vw,110px);
+    display:flex;justify-content:space-between;align-items:center}
+  .cover-logos .chip{background:#fff;border-radius:12px;padding:12px 16px;box-shadow:var(--shadow)}
+  .cover-logos .chip img{display:block;height:clamp(34px,5vh,46px);width:auto}
+  .cover-meta{margin-top:clamp(26px,5vh,46px);display:flex;flex-wrap:wrap;gap:10px 26px;font-size:clamp(.85rem,1.4vw,1.05rem)}
+  .cover-meta b{font-weight:700}
+  .cover-meta .it{display:flex;flex-direction:column;gap:2px;opacity:.95}
+  .cover-meta .it span:first-child{font-size:.72em;text-transform:uppercase;letter-spacing:.12em;opacity:.7}
+  /* Small variant positioned bottom-right on the cover slide */
+  .cover-meta.small-right{position:absolute;right:clamp(24px,4vw,60px);bottom:clamp(18px,3.5vh,36px);
+    margin:0;display:flex;flex-direction:column;align-items:flex-end;gap:6px;font-size:clamp(.72rem,1vw,.85rem);
+    background:rgba(255,255,255,0.05);color:#fff;padding:8px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);
+    backdrop-filter:blur(6px);max-width:28ch;text-align:right;box-shadow:0 8px 22px rgba(4,20,18,0.45)}
+  .cover-meta.small-right .it{display:flex;flex-direction:column;align-items:flex-end;gap:2px;opacity:.96}
+  .cover-meta.small-right .it span:first-child{font-size:.68em;text-transform:uppercase;letter-spacing:.12em;opacity:.8}
+  .cover-meta.small-right b{font-weight:700;white-space:nowrap}
+  @media (max-width:820px){
+    .cover-meta.small-right{position:static;right:auto;bottom:auto;padding:0;background:transparent;border:0;box-shadow:none;max-width:none;align-items:flex-start;text-align:left;margin-top:12px}
+    .cover-meta.small-right .it{align-items:flex-start}
+  }
+  .cover-hint{position:absolute;bottom:clamp(22px,5vh,40px);left:clamp(34px,6vw,110px);font-size:.85rem;opacity:.8}
+  .cover-hint kbd{background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.45);border-radius:6px;color:#fff;
+    padding:2px 8px;font-family:inherit;font-size:.85em;font-weight:700;margin:0 2px}
+  .pill{display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);
+    border-radius:999px;padding:5px 14px;font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+
+  /* ---------- Generic layout helpers ---------- */
+  .cols{display:flex;gap:clamp(18px,2.6vw,40px);align-items:stretch}
+  .col{flex:1;min-width:0}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:clamp(14px,2vw,26px)}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(14px,1.8vw,24px)}
+
+  ul.clean{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:clamp(10px,1.6vh,18px)}
+  ul.clean li{position:relative;padding-left:32px;font-size:clamp(.95rem,1.45vw,1.18rem);line-height:1.4}
+  ul.clean li::before{content:"";position:absolute;left:0;top:.45em;width:13px;height:13px;border-radius:4px;
+    background:var(--teal);transform:rotate(45deg)}
+  ul.clean li b{color:var(--teal-dark)}
+
+  .card{background:#fff;border:1px solid #e6efed;border-radius:var(--radius);padding:clamp(14px,1.8vw,24px);
+    box-shadow:var(--shadow)}
+  .card h3{font-size:clamp(1rem,1.5vw,1.25rem);font-weight:800;margin-bottom:.4em}
+  .tag{display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+    padding:4px 10px;border-radius:999px;margin-bottom:10px}
+  .tag.diag{background:#fdeaea;color:var(--bad)}
+  .tag.des{background:#e6f6ec;color:var(--good)}
+  .tag.teal{background:var(--teal-soft);color:var(--teal-dark)}
+
+  .kpi-row{display:flex;gap:clamp(14px,2vw,28px);flex-wrap:wrap}
+  .kpi{background:var(--teal-soft);border:1px solid var(--teal-line);border-radius:14px;
+    padding:clamp(12px,1.6vw,20px) clamp(16px,2vw,26px);min-width:150px;flex:1}
+  .kpi .num{font-size:clamp(1.8rem,3.6vw,3rem);font-weight:800;color:var(--teal-dark);line-height:1}
+  .kpi .num.bad{color:var(--bad)}
+  .kpi .lab{font-size:clamp(.78rem,1.1vw,.95rem);color:var(--muted);margin-top:6px}
+  .src{font-size:clamp(.72rem,1vw,.85rem);color:#8aa09b;font-style:italic;margin-top:14px}
+
+  /* ---------- Bar chart (slide 3) ---------- */
+  .bars{display:flex;flex-direction:column;gap:clamp(12px,2vh,22px);margin-top:6px}
+  .barrow{cursor:pointer}
+  .barrow .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+  .barrow .name{font-weight:700;font-size:clamp(.9rem,1.3vw,1.1rem)}
+  .barrow .val{font-weight:800;font-size:clamp(1rem,1.5vw,1.3rem)}
+  .track{position:relative;height:clamp(20px,3vh,30px);background:#eef2f1;border-radius:999px;overflow:hidden}
+  .barfill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:999px;transition:width 1.1s cubic-bezier(.16,1,.3,1)}
+  .barfill.bad{background:linear-gradient(90deg,#e76b6b,var(--bad))}
+  .barfill.warn{background:linear-gradient(90deg,#f0b54a,var(--amber))}
+  .slide.active .barfill{width:var(--w)}
+  .goalline{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--teal-dark);left:10%}
+  .goalline::after{content:"doel ≤10%";position:absolute;top:-20px;left:6px;font-size:.7rem;color:var(--teal-dark);font-weight:700;white-space:nowrap}
+  .goalline.sa{left:85%}
+  .goalline.sa::after{content:"doel ≥85%";left:-72px}
+  .bardetail{max-height:0;overflow:hidden;transition:max-height .4s ease;color:var(--muted);font-size:.88rem}
+  .barrow.open .bardetail{max-height:60px;margin-top:6px}
+
+  /* ---------- Probleemkluwen (slide 6) ---------- */
+  .kluwen{display:flex;gap:clamp(16px,2.4vw,38px);align-items:center}
+  .kluwen .center{flex:0 0 auto;width:clamp(150px,17vw,230px);text-align:center;
+    background:var(--ink);color:#fff;border-radius:18px;padding:clamp(14px,2vw,24px);box-shadow:var(--shadow)}
+  .kluwen .center .big{font-size:clamp(1.6rem,3vw,2.4rem);font-weight:800;color:#fff}
+  .kluwen .center small{display:block;opacity:.8;font-size:.8rem;margin-top:6px}
+  .kpgrid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:clamp(10px,1.4vw,18px)}
+  .kpnode{background:#fff;border:2px solid #e6efed;border-left:6px solid var(--teal);border-radius:12px;
+    padding:clamp(10px,1.4vw,18px);cursor:pointer;transition:.25s}
+  .kpnode:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+  .kpnode.sel{border-color:var(--teal);background:var(--teal-soft);box-shadow:var(--shadow)}
+  .kpnode .h{font-weight:800;font-size:clamp(.92rem,1.3vw,1.1rem);color:var(--teal-dark)}
+  .kpnode .num{font-size:.72rem;font-weight:800;color:var(--teal);letter-spacing:.08em}
+  #kluwenDetail{margin-top:clamp(14px,2vh,22px);background:var(--teal-soft);border:1px solid var(--teal-line);
+    border-radius:12px;padding:14px 18px;font-size:clamp(.9rem,1.3vw,1.1rem);min-height:54px;
+    display:none;align-items:center;color:var(--teal-darker)}
+  #kluwenDetail.vis{display:flex}
+
+  /* ---------- KP slides: diagnose -> ontwerp ---------- */
+  .flow{display:flex;align-items:center;gap:clamp(10px,1.4vw,20px)}
+  .flow .arrow{flex:0 0 auto;font-size:clamp(1.4rem,2.4vw,2rem);color:var(--teal);font-weight:800}
+  .panel{flex:1;background:#fff;border:1px solid #e6efed;border-radius:var(--radius);
+    padding:clamp(14px,1.8vw,22px);box-shadow:var(--shadow);align-self:stretch}
+  .panel.now{border-top:4px solid var(--bad)}
+  .panel.next{border-top:4px solid var(--good)}
+  .panel ul{margin:.2em 0 0;padding-left:1.1em}
+  .panel li{margin:.4em 0;font-size:clamp(.86rem,1.25vw,1.05rem);line-height:1.35}
+  .choices{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+  .choice{background:var(--teal-soft);border:1px solid var(--teal-line);border-radius:10px;padding:10px 12px;cursor:pointer;transition:.2s}
+  .choice:hover{background:#dcefeb}
+  .choice .ct{font-weight:700;font-size:clamp(.85rem,1.2vw,1.02rem);display:flex;justify-content:space-between;gap:10px;align-items:center}
+  .choice .score{font-size:.72rem;font-weight:800;color:#fff;background:var(--teal);border-radius:999px;padding:2px 9px;white-space:nowrap}
+  .choice .cd{max-height:0;overflow:hidden;transition:max-height .35s ease;font-size:.85rem;color:var(--muted);line-height:1.35}
+  .choice.open .cd{max-height:160px;margin-top:7px}
+  .theory{margin-top:12px;font-size:.82rem;color:var(--muted)}
+  .theory b{color:var(--teal-dark)}
+
+  /* ---------- Synthese (slide 11) ---------- */
+  .syn{display:flex;align-items:stretch;gap:10px;flex-wrap:nowrap}
+  .synblock{flex:1;border-radius:14px;padding:clamp(12px,1.5vw,20px);color:#fff;position:relative;min-width:0}
+  .synblock .kp{font-size:.72rem;font-weight:800;letter-spacing:.1em;opacity:.9}
+  .synblock .t{font-weight:800;font-size:clamp(.9rem,1.25vw,1.1rem);margin:4px 0 6px}
+  .synblock .d{font-size:clamp(.76rem,1.05vw,.92rem);opacity:.95;line-height:1.3}
+  .synblock.b2{background:var(--teal-darker)}
+  .synblock.b1{background:var(--teal-dark)}
+  .synblock.b3{background:var(--teal)}
+  .synblock.b4{background:#3aa99a}
+  .synarrow{display:flex;align-items:center;color:var(--teal);font-weight:800;font-size:1.4rem}
+  .synfoot{margin-top:clamp(14px,2.2vh,24px);display:flex;gap:14px;flex-wrap:wrap}
+  .badge{border-radius:10px;padding:10px 16px;font-size:clamp(.82rem,1.2vw,1rem);font-weight:600}
+  .badge.wmape{background:#fdeaea;color:var(--bad)}
+  .badge.sa{background:#e6f6ec;color:var(--good)}
+
+  /* ---------- Knoster / cultuur (slide 12) ---------- */
+  .knoster{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(10px,1.4vw,18px);margin-top:6px}
+  .kn{background:#fff;border:1px solid #e6efed;border-radius:12px;padding:clamp(12px,1.5vw,18px);box-shadow:var(--shadow);border-top:4px solid var(--teal)}
+  .kn.risk{border-top-color:var(--bad)}
+  .kn .knh{font-size:.72rem;font-weight:800;color:var(--teal);letter-spacing:.06em}
+  .kn .el{font-size:clamp(1rem,1.5vw,1.25rem);font-weight:800;margin:4px 0}
+  .kn .ex{font-size:clamp(.78rem,1.1vw,.92rem);color:var(--muted);line-height:1.3}
+  .kn .risktag{display:inline-block;margin-top:8px;font-size:.66rem;font-weight:800;color:var(--bad);background:#fdeaea;border-radius:999px;padding:2px 8px}
+
+  /* ---------- Roadmap (slide 13) ---------- */
+  .road{display:flex;flex-direction:column;gap:6px}
+  .phase{display:flex;gap:14px;align-items:flex-start;cursor:pointer;background:#fff;border:1px solid #e6efed;
+    border-radius:12px;padding:clamp(8px,1.1vw,13px) clamp(12px,1.6vw,20px);transition:.25s;box-shadow:0 2px 8px rgba(21,83,73,.05)}
+  .phase:hover{box-shadow:var(--shadow);transform:translateX(3px)}
+  .phase .pn{flex:0 0 auto;width:clamp(38px,3.4vw,46px);height:clamp(38px,3.4vw,46px);border-radius:12px;background:var(--teal);
+    color:#fff;display:grid;place-items:center;font-weight:800;font-size:clamp(.85rem,1.3vw,1.1rem);line-height:1.05;text-align:center}
+  .phase .pn small{font-size:.5em;display:block;font-weight:700;opacity:.85}
+  .phase .body{flex:1;min-width:0}
+  .phase .ttl{font-weight:800;font-size:clamp(.92rem,1.3vw,1.12rem);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .phase .kpchip{font-size:.66rem;font-weight:800;background:var(--teal-soft);color:var(--teal-dark);border-radius:999px;padding:2px 9px}
+  .phase .det{max-height:0;overflow:hidden;transition:max-height .4s ease;color:var(--muted);font-size:clamp(.82rem,1.15vw,.98rem);line-height:1.4}
+  .phase.open .det{max-height:120px;margin-top:6px}
+  .phase.open .pn{background:var(--teal-dark)}
+  .phase.spoed .pn{background:var(--magenta)}
+
+  .hintclick{font-size:.78rem;color:#9bada9;font-style:italic;margin-top:10px}
+
+  /* ---------- Notes panel ---------- */
+  #notes{position:fixed;left:0;right:0;bottom:0;z-index:50;background:#11211e;color:#e8f4f2;
+    max-height:46vh;overflow:auto;padding:22px clamp(28px,6vw,90px) 28px;
+    box-shadow:0 -12px 30px rgba(0,0,0,.3);transform:translateY(101%);transition:transform .35s ease}
+  #notes.open{transform:none}
+  #notes h4{margin:0 0 8px;color:var(--teal);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase}
+  #notes .ntext{font-size:clamp(.95rem,1.5vw,1.18rem);line-height:1.55;max-width:80ch}
+  #notes .ntext .n-open{margin:0 0 10px;font-weight:700}
+  #notes .ntext .n-bullets{margin:0 0 10px;padding-left:1.15em}
+  #notes .ntext .n-bullets li{margin:4px 0}
+  #notes .ntext b{color:#fff}
+  #notes .ntext .n-bridge{margin:0 0 6px;color:#9bada9;font-style:italic}
+  #notes .ntext .n-backup{margin:0;color:#7fa39c;font-size:.85em}
+  #notes .ncount{position:absolute;top:14px;right:24px;font-size:.78rem;color:#7fa39c}
+
+  /* ---------- Help overlay ---------- */
+  #help{position:fixed;inset:0;z-index:60;background:rgba(13,36,32,.86);display:none;
+    align-items:center;justify-content:center;padding:24px}
+  #help.open{display:flex}
+  .helpcard{background:#fff;border-radius:18px;padding:32px 40px;max-width:520px;box-shadow:var(--shadow)}
+  .helpcard h3{font-size:1.4rem;margin-bottom:18px;color:var(--teal-dark)}
+  .helpcard table{width:100%;border-collapse:collapse}
+  .helpcard td{padding:8px 4px;border-bottom:1px solid #eef2f1;font-size:.98rem}
+  .helpcard td:first-child{width:130px}
+  kbd{background:#eef2f1;border:1px solid #d6e0de;border-bottom-width:2px;border-radius:6px;padding:2px 9px;
+    font-family:inherit;font-size:.85em;font-weight:700;color:var(--teal-dark)}
+
+  /* ---------- Back-up slot (examinator-proofing, niet in P/D/O/V telling) ---------- */
+  #backupLock,#backupPanel{position:fixed;inset:0;z-index:70;background:rgba(13,36,32,.92);display:none;
+    align-items:center;justify-content:center;padding:24px}
+  #backupLock.open,#backupPanel.open{display:flex}
+  .locktip{position:fixed;left:30px;bottom:64px;z-index:24;font-size:.72rem;color:rgba(255,255,255,.35);
+    letter-spacing:.04em;transition:opacity .4s}
+  body.cover .locktip{opacity:0}
+  .lockcard{background:#fff;border-radius:18px;padding:32px 40px;max-width:380px;box-shadow:var(--shadow);text-align:center}
+  .lockcard h3{font-size:1.25rem;margin-bottom:8px;color:var(--teal-dark)}
+  .lockcard p{color:var(--muted);font-size:.92rem;margin:0 0 18px}
+  .lockcard input{width:100%;padding:10px 12px;border:1px solid var(--teal-line);border-radius:10px;
+    font-size:1rem;text-align:center;letter-spacing:.1em;margin-bottom:12px;font-family:inherit}
+  .lockcard .err{color:var(--bad);font-size:.82rem;min-height:1.2em;margin-bottom:6px}
+  .lockcard button{background:var(--teal);color:#fff;border:none;border-radius:10px;padding:10px 22px;
+    font-weight:700;font-size:.92rem;cursor:pointer}
+  .lockcard button:hover{background:var(--teal-dark)}
+
+  #backupPanel .bp-frame{background:#fff;border-radius:18px;box-shadow:var(--shadow);
+    width:min(1100px,94vw);height:min(760px,92vh);display:flex;flex-direction:column;overflow:hidden}
+  .bp-head{display:flex;align-items:center;justify-content:space-between;padding:16px 26px;
+    border-bottom:1px solid var(--teal-line);flex:none}
+  .bp-head .eyebrow{margin:0}
+  .bp-close{background:none;border:none;font-size:1.4rem;color:var(--muted);cursor:pointer;line-height:1;padding:4px 8px}
+  .bp-close:hover{color:var(--ink)}
+  .bp-tabs{display:flex;gap:6px;padding:12px 26px;flex-wrap:wrap;border-bottom:1px solid #eef2f1;flex:none}
+  .bp-tab{background:#eef2f1;border:none;border-radius:999px;padding:7px 16px;font-size:.82rem;font-weight:700;
+    color:var(--muted);cursor:pointer;transition:.2s}
+  .bp-tab:hover{background:var(--teal-soft);color:var(--teal-dark)}
+  .bp-tab.active{background:var(--teal);color:#fff}
+  .bp-body{flex:1;overflow-y:auto;padding:22px 26px 30px}
+  .bp-sec{display:none}
+  .bp-sec.active{display:block}
+  .bp-sec h4{font-size:1.15rem;color:var(--teal-dark);margin:0 0 6px}
+  .bp-sec .note{color:var(--muted);font-size:.86rem;margin:0 0 16px}
+  .bp-sec table{width:100%;border-collapse:collapse;font-size:.86rem;margin-bottom:18px}
+  .bp-sec th{text-align:left;background:var(--teal-soft);color:var(--teal-dark);padding:8px 10px;font-weight:700}
+  .bp-sec td{padding:8px 10px;border-bottom:1px solid #eef2f1;vertical-align:top}
+  .bp-sec tr:last-child td{border-bottom:none}
+  .bp-flag{background:#fdf3e3;border-left:4px solid var(--amber);border-radius:8px;padding:10px 14px;
+    font-size:.84rem;color:var(--ink);margin-bottom:16px}
+  .bp-qa{border-left:4px solid var(--teal);background:var(--teal-soft);border-radius:0 10px 10px 0;
+    padding:12px 16px;margin-bottom:14px}
+  .bp-qa .q{font-weight:700;color:var(--teal-darker);margin-bottom:6px;font-size:.92rem}
+  .bp-qa .a{font-size:.88rem;color:var(--ink);line-height:1.45;margin:0}
+  .bp-src{font-size:.74rem;color:var(--muted);margin-top:14px;font-style:italic}
+
+  /* ---------- Uitklapbare theoriekaarten ---------- */
+  .bp-group-label{font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--teal);margin:22px 0 10px}
+  .bp-group-label:first-child{margin-top:0}
+  .theory-card{border:1px solid var(--teal-line);border-radius:10px;margin-bottom:10px;background:#fff;overflow:hidden}
+  .theory-card summary{cursor:pointer;list-style:none;padding:11px 16px;display:flex;align-items:center;
+    justify-content:space-between;gap:10px;font-weight:700;font-size:.9rem;color:var(--teal-darker);
+    background:var(--teal-soft);transition:.2s}
+  .theory-card summary::-webkit-details-marker{display:none}
+  .theory-card summary:hover{background:#dcefea}
+  .theory-card summary .yr{font-weight:400;color:var(--muted);font-size:.82rem;margin-left:8px}
+  .theory-card summary::after{content:'+';font-size:1.1rem;color:var(--teal);flex:none;transition:transform .2s}
+  .theory-card[open] summary::after{content:'\2212'}
+  .theory-card .tc-body{padding:14px 16px 4px}
+  .theory-card .tc-row{margin-bottom:12px}
+  .theory-card .tc-row .lbl{font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--teal-dark);margin-bottom:4px}
+  .theory-card .tc-row p{margin:0;font-size:.87rem;line-height:1.5;color:var(--ink)}
+  .theory-card .tc-row.web{background:var(--teal-soft);border-radius:8px;padding:8px 10px}
+  .theory-card .tc-src{font-size:.74rem;color:var(--muted);font-style:italic;padding-bottom:10px}
+
+  /* ---------- Nav arrows ---------- */
+  .nav{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);z-index:27;display:flex;gap:8px}
+  .nav button{width:38px;height:38px;border-radius:10px;border:1px solid var(--teal-line);background:#fff;
+    color:var(--teal-dark);font-size:1.1rem;cursor:pointer;display:grid;place-items:center;box-shadow:0 2px 8px rgba(21,83,73,.08);transition:.2s}
+  .nav button:hover{background:var(--teal-soft)}
+  body.cover .nav{opacity:0;pointer-events:none}
+
+  .notes-hint{position:fixed;bottom:60px;right:24px;z-index:24;font-size:.74rem;color:#9bada9;background:#fff;
+    border:1px solid #e6efed;border-radius:8px;padding:5px 10px;box-shadow:0 2px 8px rgba(21,83,73,.06)}
+  body.cover .notes-hint{opacity:0}
+
+  @media (max-width:820px){
+    .cols,.flow,.kluwen,.syn{flex-direction:column}
+    .kpgrid,.grid2,.grid3,.knoster,.knoster5,.thgrid{grid-template-columns:1fr 1fr}
+    .knoster{grid-template-columns:1fr 1fr}
+  }
+
+  /* ---------- Theoretisch kader (theorie-overzicht) ---------- */
+  .thgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:clamp(8px,1.2vw,14px);margin-top:6px}
+  .thcard{background:#fff;border:1px solid #e6efed;border-radius:12px;padding:clamp(9px,1.1vw,14px);box-shadow:0 2px 8px rgba(21,83,73,.05)}
+  .thcard .tt{font-weight:800;font-size:clamp(.76rem,.95vw,.88rem);color:var(--teal-dark);line-height:1.25;margin-bottom:1px}
+  .thcard .yr{font-size:.66rem;color:var(--muted);margin-bottom:6px}
+  .thcard .ki{font-size:.72rem;color:var(--ink);line-height:1.3;margin-bottom:4px}
+  .thcard .ap{font-size:.72rem;color:var(--muted);line-height:1.3}
+  .thclusterlabel{font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:18px 0 6px}
+  .thteaser{display:flex;gap:12px;flex-wrap:wrap}
+  .thchip{background:var(--teal-soft);border:1px solid var(--teal-line);border-radius:12px;padding:10px 14px;font-size:.84rem;color:var(--teal-darker);flex:1;min-width:220px}
+  .thchip b{display:block;color:var(--teal-dark);margin-bottom:3px}
+
+  /* ---------- De Caluwé kleurenmodel ---------- */
+  .caluwerow{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+  .caluwe{flex:1;min-width:150px;border-radius:14px;padding:14px 16px;color:#fff;position:relative}
+  .caluwe .cn{font-weight:800;font-size:.92rem;margin-bottom:4px}
+  .caluwe .cd{font-size:.78rem;opacity:.95;line-height:1.3}
+  .caluwe.dom{outline:3px solid var(--teal-dark);outline-offset:3px}
+  .caluwe.geel{background:#b3920a}
+  .caluwe.blauw{background:#1d5fa0}
+  .caluwe.rood{background:#b5354a}
+  .caluwe.groen{background:#2e9e5b}
+  .caluwe.wit{background:#6b7280}
+  .caluwe .pct{position:absolute;top:10px;right:12px;font-size:.76rem;font-weight:800;background:rgba(255,255,255,.22);padding:2px 8px;border-radius:999px}
+
+  /* ---------- Knoster vijf elementen ---------- */
+  .knoster5{display:grid;grid-template-columns:repeat(5,1fr);gap:clamp(8px,1.2vw,16px);margin-top:6px}
+  .kn5{background:#fff;border:1px solid #e6efed;border-radius:12px;padding:clamp(10px,1.3vw,16px);box-shadow:0 2px 8px rgba(21,83,73,.05);border-top:4px solid var(--teal)}
+  .kn5 .el{font-weight:800;font-size:clamp(.84rem,1.15vw,1rem);color:var(--teal-dark)}
+  .kn5 .mis{font-size:.7rem;font-weight:800;color:var(--bad);margin:6px 0 2px;text-transform:uppercase;letter-spacing:.04em}
+  .kn5 .res{font-size:.78rem;color:var(--muted);line-height:1.3}
+
+  /* ---------- Presenter / publiek modus ---------- */
+  #presenterBar{position:fixed;top:0;left:0;right:0;height:40px;z-index:80;background:var(--ink);color:#fff;
+    display:none;align-items:center;justify-content:space-between;padding:0 20px;font-size:.82rem;font-weight:700;gap:14px}
+  body.mode-presenter #presenterBar{display:flex}
+  body.mode-presenter .brand{display:none}
+  /* Presenter-console: huidige dia verkleind linksboven (scale houdt vw-tekst proportioneel) */
+  body.mode-presenter #deck{inset:auto;top:0;left:0;width:100vw;height:100vh;
+    transform-origin:top left;transform:translate(24px,50px) scale(.62);
+    border-radius:18px;box-shadow:0 12px 34px rgba(13,36,32,.20)}
+  #presenterBar .pb-group{display:flex;align-items:center;gap:14px}
+  #presenterBar button{background:var(--teal);color:#fff;border:0;border-radius:8px;padding:7px 14px;
+    font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit}
+  #presenterBar button:hover{background:var(--teal-dark)}
+  #presenterBar button.linked{background:var(--good)}
+  #presenterBar .pb-dot{width:8px;height:8px;border-radius:50%;background:#5c6f6b;display:inline-block;margin-right:6px}
+  #presenterBar .pb-dot.live{background:var(--good)}
+
+  #peekWrap{position:fixed;right:20px;bottom:66px;z-index:80;display:none;flex-direction:column;gap:5px;align-items:flex-end}
+  body.mode-presenter #peekWrap{display:flex;top:50px;right:24px;bottom:auto}
+  body.mode-presenter #peekBox{width:400px;height:250px}
+  body.mode-presenter #peekBox iframe{transform:scale(.3125)}
+  /* Spreeknotities als vast paneel in de rechterkolom (altijd zichtbaar) */
+  body.mode-presenter #notes{left:calc(48px + 62vw);right:24px;top:340px;bottom:64px;
+    max-height:none;transform:none;border-radius:16px;box-shadow:0 12px 30px rgba(13,36,32,.22)}
+  body.mode-presenter .notes-hint{display:none}
+  #peekWrap .pw-label{font-size:.68rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#7fa39c}
+  #peekBox{width:240px;height:150px;border-radius:10px;overflow:hidden;border:1px solid var(--teal-line);box-shadow:var(--shadow);background:#fff}
+  #peekBox iframe{width:1280px;height:800px;border:0;transform:scale(.1875);transform-origin:top left;pointer-events:none}
+
+  body.mode-audience #presenterBar,
+  body.mode-audience #peekWrap,
+  body.mode-audience #notes,
+  body.mode-audience .notes-hint,
+  body.mode-audience #help{display:none!important}
+  body.mode-peek #bottombar,
+  body.mode-peek #progress,
+  body.mode-peek .nav,
+  body.mode-peek .brand{display:none!important}
+</style>
+</head>
+<body class="cover">
+
+<div id="deck">
+
+  <!-- ===== Slide 1 - TITEL ===== -->
+  <section class="slide cover-slide active">
+    <div class="cover-logos">
+      <div class="chip"><img src="data:image/png;base64,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" alt="Contecto"></div>
+      <div class="chip"><img src="data:image/png;base64,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" alt="HAN University of Applied Sciences"></div>
+    </div>
+    <span class="pill">Verdediging adviesrapport</span>
+    <h1 style="margin-top:18px">Productieplanning&nbsp;2.0</h1>
+    <p class="lead">Herontwerp van de productieplanning in Ridder iQ bij Contecto BV</p>
+    <div class="cover-meta">
+      <div class="it"><span>Student</span><b>Senn Lauwers - 1656013</b></div>
+      <div class="it"><span>Opleiding</span><b>Technische Bedrijfskunde - HAN</b></div>
+      <div class="it"><span>Datum</span><b>2 juli 2026</b></div>
+    </div>
+    <div class="cover-meta small-right">
+      <div class="it"><span>Bedrijf</span><b>Contecto</b></div>
+      <div class="it"><span>Begeleider</span><b>Rik van der Linden</b></div>
+      <div class="it"><span>School</span><b>HAN Arnhem</b></div>
+      <div class="it"><span>Eerste beoordelaar</span><b>Marco Rijkeboer</b></div>
+      <div class="it"><span>Tweede beoordelaar</span><b>Andries van Stralen</b></div>
+    </div>
+    <div class="cover-hint">Navigeer met <kbd>→</kbd><kbd>spatie</kbd> · vorige <kbd>←</kbd> · spreeknotities <kbd>N</kbd> · hulp <kbd>?</kbd></div>
+    <aside class="notes" hidden><p class="n-open">Contecto groeide zo hard dat het de grip op haar eigen productie verloor. Vandaag laat ik zien hoe het die grip terugpakt.</p>
+      <ul class="n-bullets">
+        <li>Contecto in Beugen, afstudeeronderzoek Technische Bedrijfskunde</li>
+        <li>Route: probleem, diagnose, ontwerp, verandering</li>
+        <li>Tijd: ca. <b>15 minuten</b></li>
+        <li>Evaluatiefase bewust buiten scope</li>
+      </ul>
+      <p class="n-bridge">Bruggetje: ik begin bij de aanleiding, een bedrijf dat sneller groeide dan zijn planning.</p>
+    </aside>
+  </section>
+
+  <!-- ===== Slide 2 - AANLEIDING (P) ===== -->
+  <section class="slide" data-phase="P">
+    <span class="eyebrow">Probleemidentificatie</span>
+    <h2>Een bedrijf dat sneller groeide dan zijn planning</h2>
+    <div class="accentbar"></div>
+    <div class="cols">
+      <div class="col">
+        <ul class="clean">
+          <li class="fragment">Contecto - PCBA's op <b>SMT</b> &amp; <b>THT</b>, gepland in <b>Ridder iQ</b></li>
+          <li class="fragment">Orderstroom sinds 2019: <b style="font-size:1.35em;color:var(--bad)">×4</b></li>
+          <li class="fragment"data-group="1">Greiner (1972) - <b>controlecrisis</b>: regie kwijt</li>
+        </ul>
+      </div>
+      <div class="col fragment"data-group="1">
+        <div class="card">
+          <h3 style="color:var(--teal-dark)">Groeifasen - Greiner (1972)</h3>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
+            <div style="display:flex;gap:12px;align-items:center"><span style="flex:0 0 64px;font-weight:800;color:var(--muted)">2002</span><span>Creativiteit - pionier in mechatronica</span></div>
+            <div style="display:flex;gap:12px;align-items:center"><span style="flex:0 0 64px;font-weight:800;color:var(--muted)">→</span><span>Sturing - invoering ERP Ridder iQ</span></div>
+            <div style="display:flex;gap:12px;align-items:center"><span style="flex:0 0 64px;font-weight:800;color:var(--muted)">2019</span><span>Delegatie - planning naar de werkvloer</span></div>
+            <div style="display:flex;gap:12px;align-items:center;background:#fdeaea;border-radius:10px;padding:10px 12px"><span style="flex:0 0 64px;font-weight:800;color:var(--bad)">nu</span><b style="color:var(--bad)">Controlecrisis: regie kwijt</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <aside class="notes" hidden><p class="n-open">Contecto plant printplaten op twee afdelingen in het ERP-systeem Ridder iQ.</p>
+      <ul class="n-bullets">
+        <li>SMT en THT, planning loopt via <b>Ridder iQ</b></li>
+        <li>Orderstroom sinds 2019: <b>×4</b></li>
+        <li>Greiner (1972): controlecrisis, regie kwijt</li>
+        <li>Teamleads schuiven orders handmatig om het systeem heen</li>
+      </ul>
+      <p class="n-bridge">Bruggetje: die controlecrisis is direct terug te zien in de cijfers.</p>
+    </aside>
+  </section>
+
+  <!-- ===== Slide 3 - PROBLEEM IN CIJFERS (P) ===== -->
+  <section class="slide" data-phase="P">
+    <span class="eyebrow">Probleemidentificatie</span>
+    <h2>Het probleem in cijfers</h2>
+    <p class="sub">Nulmeting over kalenderjaar 2025. Klik op een balk voor de toelichting.</p>
+    <div class="bars">
+      <div class="barrow fragment" data-bar>
+        <div class="top"><span class="name">WMAPE - THT</span><span class="val" style="color:var(--bad)">51%</span></div>
+        <div class="track"><div class="barfill bad" style="--w:51%"></div><div class="goalline"></div></div>
+        <div class="bardetail">Geplande uren wijken op dagniveau ver af van de realisatie. Norm: maximaal 10%.</div>
+      </div>
+      <div class="barrow fragment" data-bar>
+        <div class="top"><span class="name">WMAPE - SMT</span><span class="val" style="color:var(--bad)">64%</span></div>
+        <div class="track"><div class="barfill bad" style="--w:64%"></div><div class="goalline"></div></div>
+        <div class="bardetail">Grootste afwijking: bijna twee derde van de dagplanning klopt niet.</div>
+      </div>
+      <div class="barrow fragment" data-bar>
+        <div class="top"><span class="name">Schedule Adherence</span><span class="val" style="color:var(--amber)">29,53%</span></div>
+        <div class="track"><div class="barfill warn" style="--w:29.53%"></div><div class="goalline sa"></div></div>
+        <div class="bardetail">Slechts 29,53% komt op of vóór de geplande datum gereed. Doel: minimaal 85%.</div>
+      </div>
+    </div>
+    <div class="card fragment" style="margin-top:22px;border-left:6px solid var(--bad)">
+      <span class="tag diag">Handelingsprobleem</span>
+      <p style="margin:0;font-size:clamp(.92rem,1.35vw,1.12rem)">Grove inschattingen en schijncapaciteit leiden tot een onacceptabel hoge WMAPE, terwijl voor grip op de verviervoudigde orderstroom maximaal 10% nodig is.</p>
+    </div>
+    <div class="src">Bron: Ridder iQ via Power BI (kalenderjaar 2025)</div>
+    <aside class="notes" hidden><p class="n-open">De ernst van de crisis blijkt uit de nulmeting over 2025.</p>
+      <ul class="n-bullets">
+        <li>WMAPE THT: <b>51%</b>, norm maximaal 10%</li>
+        <li>WMAPE SMT: <b>64%</b>, grootste afwijking</li>
+        <li>Schedule Adherence: <b>29,53%</b>, doel ≥85%</li>
+        <li>Bron: Ridder iQ via Power BI, kalenderjaar 2025</li>
+      </ul>
+      <p class="n-bridge">Bruggetje: deze cijfers leiden direct naar de hoofdvraag.</p>
+      <p class="n-backup">Als ze vragen naar de berekening van WMAPE → zie back-up rekenmethode.</p>
+    </aside>
+  </section>
+
+  <!-- ===== Slide 4 - HOOFDVRAAG / DOEL / SCOPE (P) ===== -->
+  <section class="slide" data-phase="P">
+    <span class="eyebrow">Probleemidentificatie</span>
+    <h2>Hoofdvraag, doelstelling en afbakening</h2>
+    <div class="accentbar"></div>
+    <div class="card fragment" style="border-left:6px solid var(--teal)">
+      <span class="tag teal">Hoofdvraag</span>
+      <p style="margin:0;font-size:clamp(1rem,1.6vw,1.32rem);font-weight:600;line-height:1.4">"Hoe kan Contecto de productieplanning in Ridder iQ herontwerpen zodat de WMAPE op SMT en THT theoretisch terugloopt naar maximaal 10% vóór 1 juli 2026?"</p>
+    </div>
+    <div class="grid2" style="margin-top:18px">
+      <div class="kpi fragment"><div class="num">≤10%</div><div class="lab">WMAPE - planningsfout (van 51% / 64%)</div></div>
+      <div class="kpi fragment"><div class="num">≥85%</div><div class="lab">Schedule Adherence - gedragsmatige randvoorwaarde (van 29,53%)</div></div>
+    </div>
+    <div class="fragment" style="margin-top:20px">
+      <div style="font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">PDOVE-handelingscyclus - scope van dit onderzoek</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span class="badge sa" style="background:var(--teal-soft);color:var(--teal-dark)">P · Probleemidentificatie</span>
+        <span class="badge sa" style="background:var(--teal-soft);color:var(--teal-dark)">D · Diagnose</span>
+        <span class="badge sa" style="background:var(--teal-soft);color:var(--teal-dark)">O · Ontwerp</span>
+        <span class="badge sa" style="background:#eaf3f1;color:var(--teal-dark);border:1px dashed var(--teal-line)">V · Verandering = implementatieadvies</span>
+        <span class="badge" style="background:#f4f6f5;color:#aab8b5;text-decoration:line-through">E · Evaluatie buiten scope</span>
+      </div>
+    </div>
+    <aside class="notes" hidden><p class="n-open">Dat leidt tot de hoofdvraag: kan Contecto de planning herontwerpen richting een WMAPE van maximaal 10%.</p>
+      <ul class="n-bullets">
+        <li>Hoofdvraag: WMAPE <b>≤10%</b> vóór 1 juli 2026</li>
+        <li>Schedule Adherence <b>≥85%</b>: gedragsmatige randvoorwaarde</li>
+        <li>Normen vastgesteld in overleg met de Operations Manager (literatuur geeft geen eenduidige waarde)</li>
+        <li>PDOVE: P, D, O binnen scope; V als implementatieadvies; E buiten scope</li>
+      </ul>
+      <p class="n-bridge">Bruggetje: om deze hoofdvraag te beantwoorden, leg ik eerst het theoretisch kader uit.</p>
+    </aside>
+  </section>
+
+  <!-- ===== Slide 5 - THEORETISCH KADER: THEORIE / MODEL / METHODE (D) ===== -->
+  <section class="slide" data-phase="D">
+    <span class="eyebrow">Diagnose - theoretisch kader</span>
+    <h2>Theoretisch kader: theorie, model en methode</h2>
+    <p class="sub">Kernselectie uit 29 onderliggende bronnen.</p>
+    <div class="grid3">
+      <div class="card fragment">
+        <span class="tag teal">Theorie</span>
+        <h3>Waarom planning faalt</h3>
+        <ul class="clean" style="gap:10px">
+          <li style="font-size:.92rem"><b>Greiner (1972):</b> controlecrisis door gedecentraliseerde planning.</li>
+          <li style="font-size:.92rem"><b>Galbraith (1974):</b> informatieverwerking tekort bij groeiende variatie.</li>
+          <li style="font-size:.92rem"><b>Hax &amp; Meal (1975); Pinedo (2008):</b> aggregatie verhult knelpunten op werkstationniveau.</li>
+        </ul>
+      </div>
+      <div class="card fragment">
+        <span class="tag teal">Model</span>
+        <h3>Capaciteit &amp; meting</h3>
+        <ul class="clean" style="gap:10px">
+          <li style="font-size:.92rem"><b>Altendorfer et al. (2016):</b> geplande utilisatie / Capacity Cushion.</li>
+          <li style="font-size:.92rem"><b>Nakajima (1988):</b> OEE-verliesindeling.</li>
+          <li style="font-size:.92rem"><b>Wight (1984); Hirano (1995):</b> closed-loop MRP en visueel management.</li>
+        </ul>
+      </div>
+      <div class="card fragment">
+        <span class="tag teal">Methode</span>
+        <h3>Praktijkgericht onderzoek</h3>
+        <ul class="clean" style="gap:10px">
+          <li style="font-size:.92rem">Data 2025 <b>Ridder iQ/Power BI</b>, interviews stakeholders, meewerken productievloer en Gemba walk.</li>
+          <li style="font-size:.92rem">Expert-validatie van de planningslogica door de Productie Manager en Operations Manager.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="src">Betrouwbaarheid en validiteit zijn geborgd via triangulatie van Ridder iQ/Power BI-data, interviews en Gemba walk, getoetst in expert-validatie met de Productie Manager en Operations Manager.</div>
+    <aside class="notes" hidden><p class="n-open">Het theoretisch kader bestaat uit drie lagen: theorie, model en methode.</p>
+      <ul class="n-bullets">
+        <li>Theorie: Greiner, Galbraith, Hax &amp; Meal/Pinedo, waarom planning faalt</li>
+        <li>Model: Altendorfer Capacity Cushion, Nakajima OEE, visueel management</li>
+        <li>Methode: data Ridder iQ/Power BI, interviews, Gemba walk</li>
+        <li>Expert-validatie door Productie Manager en Operations Manager</li>
+        <li><b>15 bronnen</b> in totaal, volledige tabel in back-up</li>
+      </ul>
+      <p class="n-bridge">Bruggetje: met dit kader kan ik de probleemkluwen ontrafelen.</p>
+      <p class="n-backup">Als ze vragen naar de volledige bronnentabel → zie back-up theoretisch kader.</p>
+    </aside>
+  </section>
+
+  <!-- ===== Slide 6 - PROBLEEMKLUWEN (D) ===== -->
+  <section class="slide" data-phase="D">
+    <span class="eyebrow">Diagnose</span>
+    <h2>Eén handelingsprobleem, vier kernproblemen</h2>
+    <div class="kluwen fragment">
+      <div class="center">
+        <div class="big">↑ WMAPE</div>
+        <small>Gebrek aan regie op de orderstroom</small>
+      </div>
+      <div class="kpgrid">
+        <div class="kpnode" data-kp="1"><span class="num">KP 1</span><div class="h">Te grof groepsniveau</div></div>
+        <div class="kpnode" data-kp="2"><span class="num">KP 2</span><div class="h">Capaciteit verkeerd ingesteld</div></div>
+        <div class="kpnode" data-kp="3"><span class="num">KP 3</span><div class="h">Foutieve afroeporders</div></div>
+        <div class="kpnode" data-kp="4"><span class="num">KP 4</span><div class="h">Geen visuele prioriteit</div></div>
+      </div>
+    </div>
+    <div id="kluwenDetail">Meer informatie over het kernprobleem...</div>
+    <aside class="notes" hidden><p class="n-open">De hoge WMAPE komt voort uit vier samenhangende kernproblemen.</p>
+      <ul class="n-bullets">
+        <li>KP1: te grof groepsniveau</li>
+        <li>KP2: capaciteit verkeerd ingesteld</li>
+        <li>KP3: foutieve afroeporders</li>
+        <li>KP4: geen visuele prioriteit</li>
+      </ul>
+      <p class="n-bridge">Bruggetje: ik behandel ze één voor één, eerst de diagnose dan het ontwerp.</p>
+    </aside>
+  </section>
+
+  <!-- ===== Slide 7 - KP1 (O) ===== -->
+  <section class="slide" data-phase="O">
+    <span class="eyebrow">Ontwerp - Kernprobleem 1</span>
+    <h2>Planning op te grof niveau</h2>
+    <div class="accentbar"></div>
+    <div class="flow">
+      <div class="panel now fragment">
+        <span class="tag diag">Diagnose</span>
+        <ul>
+          <li>Gepland op <b>bewerkingsgroepniveau</b>, niet werkstation</li>
+          <li>Afwijkingen heffen elkaar op; knelpunt onzichtbaar</li>
+        </ul>
+      </div>
+      <div class="arrow fragment" data-group="1">→</div>
+      <div class="panel fragment" data-group="1">
+        <span class="tag des">Ontwerp</span>
+        <p style="margin:.2em 0 .6em;font-weight:700">Disaggregatie naar <b style="font-size:1.2em">19</b> werkstations</p>
+        <div class="choices">
+          <div class="choice" data-exp><div class="ct"><span>SMT Lijn 1 &amp; 2 apart</span></div><div class="cd"><span class="score" style="display:inline-block;margin-bottom:5px">4,60</span><br>Lijngebonden; knelpunt zichtbaar (vs. 1,80 samenvoegen)</div></div>
+          <div class="choice" data-exp><div class="ct"><span>4 THT-stations samengevoegd</span></div><div class="cd"><span class="score" style="display:inline-block;margin-bottom:5px">5,00</span><br>Identiek; apart registreren = alleen extra last (vs. 1,80)</div></div>
+          <div class="choice" data-exp><div class="ct"><span>Reflow + Vapor gecombineerd</span></div><div class="cd"><span class="score" style="display:inline-block;margin-bottom:5px">4,60</span><br>Stuklijstattribuut bepaalt machine; één groep volstaat</div></div>
+        </div>
+        <div class="theory">Hiërarchische productieplanning (Hax &amp; Meal, 1975).</div>
+      </div>
+    </div>
+    <aside class="notes" hidden><p class="n-open">Kernprobleem 1: er wordt gepland op bewerkingsgroepniveau in plaats van werkstation.</p>
+      <ul class="n-bullets">
+        <li>Afwijkingen heffen elkaar op, knelpunt onzichtbaar</li>
+        <li>Ontwerp: disaggregatie naar <b>19 werkstations</b></li>
+        <li>SMT lijn 1 en 2 apart: lijngebonden</li>
+        <li>4 THT-stations samengevoegd: identiek, apart registreren is extra last</li>
+        <li>Theorie: hiërarchische productieplanning (Hax &amp; Meal, 1975)</li>
+      </ul>
+      <p class="n-bridge">Bruggetje: disaggregatie werkt alleen als de capaciteit ook klopt, vandaar kernprobleem 2.</p>
+      <p class="n-backup">Als ze vragen naar de scores → zie back-up selectiematrices.</p>
+    </aside>
+  </section>
+
+  <!-- ===== Slide 8 - KP2 (O) ===== -->
+  <section class="slide" data-phase="O">
+    <span class="eyebrow">Ontwerp - Kernprobleem 2</span>
+    <h2>Capaciteit verkeerd ingesteld</h2>
+    <div class="accentbar"></div>
+    <div class="flow">
+      <div class="panel now fragment">
+        <span class="tag diag">Diagnose</span>
+        <ul>
+          <li>Planning tegen <b>oneindige capaciteit</b> (Altendorfer, 2016)</li>
+          <li>Geen verdiscontering verzuim/stilstand</li>
+          <li>SMT <b>onder</b> plan, THT <b>boven</b> plan</li>
+        </ul>
+      </div>
+      <div class="arrow fragment" data-group="1">→</div>
+      <div class="panel next fragment" data-group="1">
+        <span class="tag des">Ontwerp - 3 correcties</span>
+        <div class="choices">
+          <div class="choice" data-exp><div class="ct"><span>1 · Herkalibratie baseline</span></div><div class="cd"><span class="score" style="display:inline-block;margin-bottom:5px">4,45</span><br>Op gerealiseerde directe uren; periodiek bijgesteld door PM</div></div>
+          <div class="choice" data-exp><div class="ct"><span>2 · Capacity Cushion</span></div><div class="cd"><span class="score" style="display:inline-block;margin-bottom:5px">4,60</span><br>Streef 80% SMT / 75% THT; spoed overschrijfbaar via script</div></div>
+          <div class="choice" data-exp><div class="ct"><span>3 · OEE-meting op SMT</span></div><div class="cd"><span class="score" style="display:inline-block;margin-bottom:5px">5,00</span><br>Meetsoftware op pick-and-place (Nakajima, 1988); afh. VLAN sep 2026</div></div>
+        </div>
+        <div class="theory">Complementair: baseline + variatiebuffer + meetbaarheid.</div>
+      </div>
+    </div>
+    <aside class="notes" hidden><p class="n-open">Kernprobleem 2: de beschikbare capaciteit in Ridder iQ klopt niet.</p>
+      <ul class="n-bullets">
+        <li>Planning tegen oneindige capaciteit (Altendorfer, 2016)</li>
+        <li>Geen verdiscontering verzuim of stilstand</li>
+        <li>SMT onder plan, THT boven plan</li>
+        <li>3 correcties: herkalibratie, Capacity Cushion <b>80%/75%</b>, OEE-meting</li>
+      </ul>
+      <p class="n-bridge">Bruggetje: met een kloppende capaciteit kan kernprobleem 3, de afroeporders, worden aangepakt.</p>
+    </aside>
+  </section>
+
+  <!-- ===== Slide 9 - KP3 (O) ===== -->
+  <section class="slide" data-phase="O">
+    <span class="eyebrow">Ontwerp - Kernprobleem 3</span>
+    <h2>Afroeporders verstoren de planning</h2>
+    <div class="accentbar"></div>
+    <div class="flow">
+      <div class="panel now fragment">
+        <div class="kpi-row" style="margin-bottom:14px">
+          <div class="kpi"><div class="num bad">8,9–12,5%</div><div class="lab">aandeel in de orderstroom</div></div>
+          <div class="kpi"><div class="num bad">33,7%</div><div class="lab">aandeel in voorgecalculeerde uren</div></div>
+        </div>
+        <span class="tag diag">Diagnose</span>
+        <ul>
+          <li>Alle uren op <b>één vroege datum</b>, los van batch</li>
+          <li><b>Schijncapaciteit</b></li>
+        </ul>
+      </div>
+      <div class="arrow fragment" data-group="1">→</div>
+      <div class="panel fragment" data-group="1">
+        <span class="tag des">Ontwerp - score 5,00</span>
+        <div class="choices">
+          <div class="choice" data-exp><div class="ct"><span>Batchconfiguratie op offerteniveau</span></div><div class="cd">CommandScript <i>Afroep_instellingen</i> legt batchindeling vast bij de offerte.</div></div>
+          <div class="choice" data-exp><div class="ct"><span>Boncorrectie bij productieorder</span></div><div class="cd">CommandScript <i>Bonnen_Afroep_Batches_Toepassen</i> corrigeert de bon.</div></div>
+          <div class="choice" data-exp><div class="ct"><span>Exportstap per batch</span></div><div class="cd">Belasting pas geregistreerd bij vrijgave voor productie.</div></div>
+        </div>
+        <div class="theory">Scripts werken op bestaande Ridder iQ-tabellen; staffelprijs blijft behouden.</div>
+      </div>
+    </div>
+    <aside class="notes" hidden><p class="n-open">Kernprobleem 3: afroeporders verstoren de planning met schijncapaciteit.</p>
+      <ul class="n-bullets">
+        <li>8,9-12,5% van de orders, maar <b>33,7%</b> van de voorgecalculeerde uren</li>
+        <li>Alle uren op één vroege datum, los van de batch</li>
+        <li>Ontwerp: batchconfiguratie op offerteniveau (CommandScript)</li>
+        <li>Boncorrectie bij aanmaak productieorder</li>
+        <li>Belasting pas geregistreerd bij vrijgave voor productie</li>
+      </ul>
+      <p class="n-bridge">Bruggetje: met de orderstroom gezuiverd, rest nog de sturing op de werkvloer.</p>
+      <p class="n-backup">Als ze vragen naar de scripts → zie back-up CommandScripts.</p>
+    </aside>
+  </section>
+
+  <!-- ===== Slide 10 - KP4 (O) ===== -->
+  <section class="slide" data-phase="O">
+    <span class="eyebrow">Ontwerp - Kernprobleem 4</span>
+    <h2>Geen visuele prioriteit op de werkvloer</h2>
+    <div class="accentbar"></div>
+    <div class="flow">
+      <div class="panel now fragment">
+        <span class="tag diag">Diagnose</span>
+        <ul>
+          <li>Schedule Adherence slechts <b>29,53%</b>.</li>
+          <li>Prioriteiten <b>mondeling</b> en <b>persoonsafhankelijk</b>.</li>
+        </ul>
+      </div>
+      <div class="arrow fragment" data-group="1">→</div>
+      <div class="panel next fragment">
+        <span class="tag des">Ontwerp - twee ondeelbare maatregelen</span>
+        <div class="choices">
+          <div class="choice" data-exp><div class="ct"><span>Shopfloor-module Ridder iQ</span></div><div class="cd"><span class="score" style="display:inline-block;margin-bottom:5px">5,00</span><br>Zichtbare, instelbare prioriteit per werkstation; al in gebruik voor urenregistratie</div></div>
+          <div class="choice" data-exp><div class="ct"><span>Dagelijkse standup</span></div><div class="cd"><span class="score" style="display:inline-block;margin-bottom:5px">5,00</span><br>Teamleads melden knelpunt; Productie Manager verwerkt direct in Ridder iQ</div></div>
+        </div>
+        <div class="theory">Ondeelbaar: zonder standup geen tijdige verwerking; zonder module geen bereik bij teamlead.</div>
+      </div>
+    </div>
+    <aside class="notes" hidden><p class="n-open">Kernprobleem 4: geen visuele prioriteit op de werkvloer.</p>
+      <ul class="n-bullets">
+        <li>Schedule Adherence slechts <b>29,53%</b></li>
+        <li>Prioriteiten mondeling en persoonsafhankelijk</li>
+        <li>Shopfloor-module Ridder iQ: zichtbare prioriteit per werkstation</li>
+        <li>Dagelijkse standup, maximaal 10 minuten</li>
+        <li>Ondeelbaar: zonder standup geen verwerking, zonder module geen bereik</li>
+      </ul>
+      <p class="n-bridge">Bruggetje: geen van deze vier maatregelen werkt los van elkaar, vandaar de synthese.</p>
+    </aside>
+  </section>
+
+  <!-- ===== Slide 11 - SYNTHESE (O) ===== -->
+  <section class="slide" data-phase="O">
+    <span class="eyebrow">Ontwerp - synthese</span>
+    <h2>Synthese 2.0: vier maatregelen, één volgorde</h2>
+    <p class="sub">Geen maatregel staat op zichzelf.</p>
+    <div class="syn">
+      <div class="synblock b2 fragment"><div class="kp">KP 2</div><div class="t">Fundament</div><div class="d">Capaciteit kloppend maken</div></div>
+      <div class="synarrow fragment">→</div>
+      <div class="synblock b1 fragment"><div class="kp">KP 1</div><div class="t">Verfijnen</div><div class="d">Planning naar 19 werkstations</div></div>
+      <div class="synarrow fragment">→</div>
+      <div class="synblock b3 fragment"><div class="kp">KP 3</div><div class="t">Zuiveren</div><div class="d">Orderstroom zonder schijncapaciteit</div></div>
+      <div class="synarrow fragment">→</div>
+      <div class="synblock b4 fragment"><div class="kp">KP 4</div><div class="t">Borgen</div><div class="d">Uitvoering op de werkvloer</div></div>
+    </div>
+    <div class="synfoot fragment">
+      <span class="badge wmape"><b>KP 1, 2 en 3</b> sturen op de <b>WMAPE</b></span>
+      <span class="badge sa"><b>KP 4</b> stuurt op de <b>Schedule Adherence</b></span>
+    </div>
+    <aside class="notes" hidden><p class="n-open">Geen van de vier maatregelen is op zichzelf voldoende.</p>
+      <ul class="n-bullets">
+        <li>KP2 fundament: capaciteit kloppend maken</li>
+        <li>KP1 verfijnen: planning naar 19 werkstations</li>
+        <li>KP3 zuiveren: orderstroom zonder schijncapaciteit</li>
+        <li>KP4 borgen: uitvoering op de werkvloer</li>
+        <li>KP1, 2 en 3 sturen op <b>WMAPE</b>, KP4 op <b>Schedule Adherence</b></li>
+      </ul>
+      <p class="n-bridge">Bruggetje: deze volgorde vormt de basis van het veranderadvies.</p>
+    </aside>
+  </section>
+
+  <!-- ===== Slide 12 - VERANDERAANPAK: CALUWÉ + KNOSTER (V) ===== -->
+  <section class="slide" data-phase="V">
+    <span class="eyebrow">Verandering</span>
+    <h2>Veranderaanpak: cultuur en weerstandsrisico</h2>
+    <p class="sub">De Caluwé &amp; Vermaak (2015) bepaalt de aanpak; Knoster (1991) het risico per kernprobleem.</p>
+    <div class="caluwerow fragment">
+      <div class="caluwe geel"><div class="cn">Geel</div><div class="pct">13%</div></div>
+      <div class="caluwe blauw"><div class="cn">Blauw</div><div class="pct">27%</div></div>
+      <div class="caluwe rood"><div class="cn">Rood</div><div class="pct">8%</div></div>
+      <div class="caluwe groen dom"><div class="cn">Groen</div><div class="pct">46,7%</div><div class="cd">dominant</div></div>
+      <div class="caluwe wit"><div class="cn">Wit</div><div class="pct">4,4%</div></div>
+    </div>
+    <div class="card fragment" style="margin-top:16px;border-left:6px solid var(--teal)">
+      <span class="tag teal">Knoster: risico per kernprobleem</span>
+      <div style="font-size:clamp(.86rem,1.2vw,1rem);margin:0;color:var(--ink);line-height:1.4">
+        <div style="margin-bottom:8px"><b style="color:var(--teal-dark)">KP 1:</b> belang + middelen</div>
+        <div style="margin-bottom:8px"><b style="color:var(--teal-dark)">KP 2:</b> plan (eigenaarschap, cyclus)</div>
+        <div style="margin-bottom:8px"><b style="color:var(--teal-dark)">KP 3:</b> belang (voordeel Sales)</div>
+        <div style="margin-bottom:0"><b style="color:var(--teal-dark)">KP 4:</b> belang - autonomieverlies teamleads; participatie + pilot</div>
+      </div>
+    </div>
+    <aside class="notes" hidden><p class="n-open">De veranderaanpak is gebaseerd op De Caluwé en Knoster.</p>
+      <ul class="n-bullets">
+        <li>Groen dominant: <b>46,7%</b>, betrekken, pilots, leren</li>
+        <li>Blauw 27%, geel 13%, rood 8%, wit 4,4%</li>
+        <li>Knoster: 5 elementen, 1 element mist = voorspelbaar probleem</li>
+        <li>Risico's: KP1 belang/middelen, KP2 plan, KP3 belang Sales, KP4 belang teamleads</li>
+      </ul>
+      <p class="n-bridge">Bruggetje: op basis van dit risicoprofiel is de invoering gefaseerd.</p>
+    </aside>
+  </section>
+
+  <!-- ===== Slide 13 - ROADMAP (V) ===== -->
+  <section class="slide" data-phase="V">
+    <span class="eyebrow">Verandering - implementatieadvies</span>
+    <h2>Gefaseerde invoering</h2>
+    <p class="sub">Eén verandering tegelijk, met per fase een eigenaar, KPI en go/no-go. Klik op een fase.</p>
+    <div class="road fragment">
+      <div class="phase"><div class="pn">Fase<small>0</small></div><div class="body"><div class="ttl">Voorbereiding &amp; draagvlak</div><div class="det">Visie en belang expliciet maken bij Productie Manager, teamleads en Sales.</div></div></div>
+      <div class="phase spoed"><div class="pn">Fase<small>1</small></div><div class="body"><div class="ttl">Livegang afroeporders <span class="kpchip">KP 3 · spoed</span></div><div class="det">Al in de eindtestfase, gaat als eerste live.</div></div></div>
+      <div class="phase"><div class="pn">Fase<small>2</small></div><div class="body"><div class="ttl">Fundament op orde <span class="kpchip">KP 2</span></div><div class="det">Capaciteitsparameters corrigeren. Eigenaar: Productie Manager.</div></div></div>
+      <div class="phase"><div class="pn">Fase<small>3</small></div><div class="body"><div class="ttl">Planning verfijnen <span class="kpchip">KP 1</span></div><div class="det">Disaggregatie naar werkstationniveau, pilot op één afdeling.</div></div></div>
+      <div class="phase"><div class="pn">Fase<small>4</small></div><div class="body"><div class="ttl">Sturing op de werkvloer <span class="kpchip">KP 4</span></div><div class="det">Shopfloor-module + standup, 4 weken pilot. KPI: Schedule Adherence 29,53% → 85%.</div></div></div>
+    </div>
+    <aside class="notes" hidden><p class="n-open">Het implementatieadvies is gefaseerd, passend bij de groene cultuur.</p>
+      <ul class="n-bullets">
+        <li>Fase 0: draagvlak creëren</li>
+        <li>Fase 1: afroeporders, al in eindtestfase (spoed)</li>
+        <li>Fase 2: fundament capaciteit, eigenaar Productie Manager</li>
+        <li>Fase 3: planning verfijnen, pilot op één afdeling</li>
+        <li>Fase 4: sturing werkvloer, KPI Schedule Adherence <b>29,53% → 85%</b></li>
+      </ul>
+      <p class="n-bridge">Bruggetje: dat brengt mij bij de conclusie.</p>
+    </aside>
+  </section>
+
+  <!-- ===== Slide 14 - CONCLUSIE / SLOT ===== -->
+  <section class="slide cover-slide" data-phase="done">
+    <div class="cover-logos">
+      <div class="chip"><img src="data:image/png;base64,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" alt="Contecto"></div>
+      <div class="chip"><img src="data:image/png;base64,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" alt="HAN University of Applied Sciences"></div>
+    </div>
+    <span class="pill">Conclusie</span>
+    <h1 style="margin-top:18px;font-size:clamp(2rem,4.6vw,3.6rem)">Productieplanning 2.0</h1>
+    <p class="lead" style="max-width:46ch">Vier samenhangende interventies brengen de WMAPE theoretisch richting ≤10% en de Schedule Adherence richting ≥85%, gevalideerd via expert-validatie. Invoering en evaluatie vallen buiten de scope.</p>
+    <div class="cover-meta" style="margin-top:34px">
+      <div class="it"><span>Dank voor uw aandacht</span><b style="font-size:1.3em">Vragen?</b></div>
+    </div>
+    <aside class="notes" hidden><p class="n-open">Productieplanning 2.0 is een samenhangend herontwerp, geen losse maatregel.</p>
+      <ul class="n-bullets">
+        <li>WMAPE theoretisch richting <b>≤10%</b></li>
+        <li>Schedule Adherence richting <b>≥85%</b></li>
+        <li>Gevalideerd via expert-validatie</li>
+        <li>Invoering en evaluatie vallen buiten de scope</li>
+      </ul>
+      <p class="n-bridge">Dank voor uw aandacht, ik beantwoord graag uw vragen.</p>
+    </aside>
+  </section>
+
+</div>
+
+<!-- ===== Fixed UI ===== -->
+<div class="brand" id="brandTL"><img src="data:image/png;base64,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" alt="Contecto"></div>
+<div class="brand" id="brandTR"><img src="data:image/png;base64,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" alt="HAN"></div>
+
+<div id="bottombar">
+  <div id="pdove"></div>
+  <div id="counter"></div>
+</div>
+<div id="progress"></div>
+
+<div class="nav">
+  <button id="prevBtn" aria-label="Vorige">‹</button>
+  <button id="nextBtn" aria-label="Volgende">›</button>
+</div>
+<div class="notes-hint">Spreeknotities: <b>N</b></div>
+
+<div id="presenterBar">
+  <div class="pb-group"><span class="pb-dot" id="pbDot"></span><span id="pbLinkStatus">Niet gekoppeld</span></div>
+  <div class="pb-group"><span>⏱ <span id="pbTimer">00:00</span></span><button id="pbReset" style="background:none;border:none;color:#fff;cursor:pointer;font-size:.9rem;padding:0 8px;margin-left:6px;opacity:.7;transition:opacity .2s" title="Timer resetten">↻</button><span id="pbCounter"></span></div>
+  <div class="pb-group"><button id="pbOpenAudience">Open publieksscherm</button></div>
+</div>
+<div id="peekWrap">
+  <span class="pw-label">Volgende dia</span>
+  <div id="peekBox"><iframe id="peekFrame" tabindex="-1"></iframe></div>
+</div>
+
+<div id="notes">
+  <span class="ncount" id="ncount"></span>
+  <h4>Spreeknotities</h4>
+  <div class="ntext" id="ntext"></div>
+</div>
+
+<div id="help">
+  <div class="helpcard">
+    <h3>Navigatie</h3>
+    <table>
+      <tr><td><kbd>→</kbd> <kbd>spatie</kbd></td><td>Volgende stap / slide</td></tr>
+      <tr><td><kbd>←</kbd></td><td>Vorige stap / slide</td></tr>
+      <tr><td><kbd>Home</kbd> <kbd>End</kbd></td><td>Eerste / laatste slide</td></tr>
+      <tr><td><kbd>N</kbd></td><td>Spreeknotities tonen/verbergen</td></tr>
+      <tr><td><kbd>F</kbd></td><td>Volledig scherm</td></tr>
+      <tr><td><kbd>B</kbd></td><td>Back-up (op slot) openen</td></tr>
+      <tr><td><kbd>?</kbd></td><td>Deze hulp</td></tr>
+      <tr><td>klik</td><td>Op balken, kernproblemen, keuzes en fasen voor details</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="locktip">B = back-up</div>
+
+<!-- ===== Back-up: op slot, telt niet mee in P/D/O/V of de dia-teller ===== -->
+<div id="backupLock">
+  <div class="lockcard">
+    <h3>Back-up - op slot</h3>
+    <p>Alleen voor eigen gebruik tijdens de verdediging. Voer de code in.</p>
+    <input id="lockInput" type="password" autocomplete="off" placeholder="code" inputmode="numeric">
+    <div class="err" id="lockErr">&nbsp;</div>
+    <button id="lockBtn">Openen</button>
+  </div>
+</div>
+
+<div id="backupPanel">
+  <div class="bp-frame">
+    <div class="bp-head">
+      <span class="eyebrow" style="margin:0">Back-up · niet voor publiek</span>
+      <button class="bp-close" id="bpClose" aria-label="Sluiten">×</button>
+    </div>
+    <div class="bp-tabs">
+      <button class="bp-tab active" data-bp="theorie">Theorietabel</button>
+      <button class="bp-tab" data-bp="selectie">Selectiematrices</button>
+      <button class="bp-tab" data-bp="nulmeting">Power BI-nulmeting</button>
+      <button class="bp-tab" data-bp="oee">OEE</button>
+      <button class="bp-tab" data-bp="knoster">Knoster - 5 elementen</button>
+      <button class="bp-tab" data-bp="greiner">Greiner</button>
+      <button class="bp-tab" data-bp="caluwe">Caluwé</button>
+      <button class="bp-tab" data-bp="bv">Betrouwbaarheid &amp; validiteit</button>
+      <button class="bp-tab" data-bp="qa">5 vragen + ankerantwoord</button>
+    </div>
+    <div class="bp-body">
+
+      <div class="bp-sec active" id="bp-theorie">
+        <h4>Theoretisch kader: wat staat er, waarom bij Contecto</h4>
+        <p class="note">Klik een theorie open voor het volledige antwoord. Let op: de hoofdslide "kernselectie uit 15 bronnen" klopt niet meer - de Bronvermelding van het definitieve Adviesrapport (p.67-68) telt <b>29</b> unieke bronnen. Noem bij een kritische vraag liever "een kernselectie uit de literatuurlijst" dan een vast getal.</p>
+
+        <div class="bp-group-label">Kernprobleem 1 - planning op te grof groepsniveau</div>
+
+        <details class="theory-card">
+          <summary>Groeimodel en controlecrisis <span class="yr">Greiner (1972)</span></summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat stelt de theorie</div><p>Organisaties groeien in fasen (creativiteit, sturing, delegatie, coördinatie, samenwerking), die elk gedragen worden door een eigen besturingsvorm. Elke fase eindigt in een crisis die om een nieuwe besturingsvorm vraagt, omdat de bestaande vorm niet meer past bij de gegroeide omvang en complexiteit.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom toepasbaar bij Contecto</div><p>De planning bij Contecto is feitelijk gedecentraliseerd naar de werkvloer en orders worden handmatig buiten Ridder iQ verschoven (vastgesteld tijdens de Gemba-walk van 18 mei 2026 en in gesprekken met de Productie Manager). Dat zijn de symptomen van een controlecrisis in de delegatiefase (fase 3): het management verliest grip doordat coördinatie informeel en decentraal verloopt. Het verklaart waarom de problematiek organisatiebreed speelt en niet op één afdeling.</p></div>
+            <div class="tc-row web"><div class="lbl">Achtergrond (extern)</div><p>De vijf fasen zijn creativiteit, sturing, delegatie, coördinatie en samenwerking; elke fase eindigt in een specifieke crisis (leiderschap, autonomie, controle, bureaucratie). In 1998 voegde Greiner een zesde fase toe (allianties). Zie de volledige tabel in de losse tab "Greiner".</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport §2.2 en Bijlage 4; Greiner, L.E. (1972). <i>Evolution and revolution as organizations grow.</i> Harvard Business Review, 50(4). Achtergrond: <a href="https://en.wikipedia.org/wiki/Larry_E._Greiner" target="_blank" rel="noopener">Wikipedia</a>, <a href="https://www.toolshero.com/strategy/greiner-growth-model/" target="_blank" rel="noopener">Toolshero</a>.</div>
+        </details>
+
+        <details class="theory-card">
+          <summary>Information Processing Theory <span class="yr">Galbraith (1974)</span></summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat stelt de theorie</div><p>Een organisatie heeft evenveel informatieverwerkingscapaciteit nodig als de onzekerheid die ze moet verwerken. Naarmate de taakvariabiliteit toeneemt, moet er tijdens de uitvoering meer informatie tussen besluitvormers verwerkt worden. Schiet die capaciteit tekort, dan ontstaat een gat tussen wat een taak aan informatie vereist en wat de organisatie al heeft.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom toepasbaar bij Contecto</div><p>De ordervariatie bij Contecto is toegenomen, terwijl de planning nog op grof groepsniveau in Ridder iQ gebeurt. De informatieverwerking is daardoor te grof voor de werkelijke variabiliteit, wat de hoge WMAPE verklaart (THT 51%, SMT 64%, bron: Ridder iQ via Power BI) en de noodzaak onderbouwt om te plannen op werkstationniveau.</p></div>
+            <div class="tc-row web"><div class="lbl">Achtergrond (extern)</div><p>Galbraith onderscheidt twee fundamentele strategieën bij een informatietekort: de hoeveelheid te verwerken informatie verminderen (slack resources, zelfstandige taakeenheden), of het vermogen om informatie te verwerken vergroten (informatiesystemen, laterale relaties). Bij Contecto past "informatiesysteem verbeteren" (detailplanning in Ridder iQ) het best.</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport Bijlage 4; Galbraith, J.R. (1974). <i>Organization design: An information processing view.</i> Interfaces, 4(3), 28-36. Achtergrond: <a href="https://isresearcher.com/galbraith-1974-organization-design-as-information-processing-explained/" target="_blank" rel="noopener">IS Researcher - samenvatting</a>.</div>
+        </details>
+
+        <details class="theory-card">
+          <summary>Aggregatie en variabiliteitspooling (HPP) <span class="yr">Hax &amp; Meal (1975); Hopp &amp; Spearman (2011)</span></summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat stelt de theorie</div><p>Hierarchical Production Planning structureert planningsbesluiten over meerdere organisatieniveaus (strategisch, tactisch, operationeel), elk met een eigen detailniveau. Bij planning en meting op een geaggregeerd niveau heffen afwijkingen die op werkstationniveau bestaan elkaar gedeeltelijk op: positieve en negatieve afwijkingen vallen bij optelling tegen elkaar weg, waardoor de fout op totaalniveau kleiner oogt dan hij per eenheid werkelijk is.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom toepasbaar bij Contecto</div><p>De planningsnauwkeurigheid wordt nu beoordeeld op groepsniveau (THT en SMT als geheel). Overschrijding op het ene werkstation en onderbenutting op het andere strepen elkaar weg, waardoor de betrouwbaarheid te gunstig oogt en de afwijking per werkstation onzichtbaar blijft. Dit ondersteunt deelvraag 1 en de keuze om te meten en plannen op werkstationniveau (19 werkstations).</p></div>
+            <div class="tc-row web"><div class="lbl">Achtergrond (extern)</div><p>HPP staat ook bekend als de "MIT-theorie": een top-down hiërarchie van modellen waarbij de oplossing op een hoger niveau het lagere niveau begrenst, en informatie wordt geaggregeerd en gedisaggregeerd tussen niveaus. Belangrijkste voordeel: reductie van complexiteit en geleidelijke absorptie van toevallige verstoringen.</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport §4.1.4 en Bijlage 4; Hax, A.C., &amp; Meal, H.C. (1975). <i>Hierarchical integration of production planning and scheduling.</i> In Logistics, North-Holland. Achtergrond: <a href="https://isr.umd.edu/Labs/CIM/projects/scheduling/hpp.pdf" target="_blank" rel="noopener">University of Maryland - HPP overzicht</a>.</div>
+        </details>
+
+        <details class="theory-card">
+          <summary>Factory Physics / Little's Law <span class="yr">Hopp &amp; Spearman (2011)</span></summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat stelt de theorie</div><p>De doorlooptijd wordt bepaald door het onderhanden werk en de doorzet (WIP = doorzet x doorlooptijd, ofwel Little's Law), en variabiliteit in aankomst- en bewerkingstijden verslechtert de prestatie van een werkstation. Die variabiliteit manifesteert zich op het niveau van het afzonderlijke werkstation.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom toepasbaar bij Contecto</div><p>De planning in Ridder iQ staat op bewerkingsgroep, waardoor niet zichtbaar is welk werkstation de doorlooptijd daadwerkelijk bepaalt. Een planning op groepsniveau verbergt waar wachttijd en onderhanden werk ontstaan, wat onderbouwt waarom disaggregatie naar werkstationniveau nodig is.</p></div>
+            <div class="tc-row web"><div class="lbl">Achtergrond (extern)</div><p>Little's Law (Inventory = Throughput x Cycle Time) is een van de basiswetten van Factory Physics. De "Variability Law" stelt dat meer variabiliteit de systeemprestatie altijd verslechtert, en variabiliteit vroeg in een routing verhoogt de doorlooptijd sterker dan dezelfde variabiliteit later in de routing.</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport Bijlage 4; Hopp, W.J., &amp; Spearman, M.L. (2011). <i>Factory physics</i> (3e druk). Waveland Press. Achtergrond: <a href="https://en.wikipedia.org/wiki/Little%27s_law" target="_blank" rel="noopener">Wikipedia - Little's Law</a>.</div>
+        </details>
+
+        <details class="theory-card">
+          <summary>Scheduling op machineniveau <span class="yr">Pinedo (2008)</span></summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat stelt de theorie</div><p>Een productieschema is alleen realiseerbaar wanneer het rekening houdt met de capaciteit en volgorde-afhankelijkheid van de afzonderlijke werkstations of machines. Plannen op een hoger aggregatieniveau dan waar de werkelijke knelpunten liggen, levert schema's op die op papier kloppen maar in de uitvoering vastlopen.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom toepasbaar bij Contecto</div><p>De huidige planning onderscheidt de afzonderlijke werkstations niet, waardoor knelpunten niet worden gezien en de planning niet uitvoerbaar is zoals ingepland. Dit ondersteunt direct de aanbeveling om te desaggregeren van bewerkingsgroep naar werkstation (19 stations).</p></div>
+            <div class="tc-row web"><div class="lbl">Achtergrond (extern)</div><p>Pinedo's standaardwerk behandelt scheduling-omgevingen (single machine, flow shop, job shop, open shop) en de makespan (tijd waarop de laatste taak klaar is) als kernmaatstaf voor machinebalans en -benutting.</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport §4.1.3 en Bijlage 4; Pinedo, M.L. (2008). <i>Scheduling: Theory, algorithms, and systems</i> (3e druk). Springer.</div>
+        </details>
+
+        <details class="theory-card">
+          <summary>Empirische bevestiging werkstationniveau <span class="yr">Fansuri et al. (2018)</span></summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat stelt het onderzoek</div><p>Een casestudy in een vergelijkbare high-mix elektronica-productieomgeving toont aan dat analyse en planning op werkstationniveau een voorwaarde zijn voor gerichte capaciteitssturing; een hoger aggregatieniveau maskeerde ook daar de werkelijke belasting per werkstation.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom toepasbaar bij Contecto</div><p>De productieomgeving van Contecto (gemengde, kleine series elektronica op SMT en THT) lijkt sterk op de onderzochte context. Dit geeft externe empirische steun aan de keuze voor werkstationniveau, los van de eigen casusdata van Contecto - dus niet alleen "het werkt hier toevallig zo".</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport Bijlage 4; Fansuri, A.F.H. et al. (2018). <i>Productivity improvement through line balancing at electronic company - A case study.</i> IOP Conference Series: Materials Science and Engineering.</div>
+        </details>
+
+        <div class="bp-group-label">Kernprobleem 2 - beschikbare capaciteit niet juist ingesteld</div>
+
+        <details class="theory-card">
+          <summary>Planned Utilization Factor (Capacity Cushion) <span class="yr">Altendorfer, Felberbauer &amp; Jodlbauer (2016)</span></summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat stelt de theorie</div><p>De geplande bezettingsgraad is bepalend voor de stabiliteit en leverbetrouwbaarheid van een productiesysteem. Een systeem dat tot bijna 100% wordt volgepland heeft geen ruimte om stochastische verstoringen (storingen, variabele bewerkingstijden, spoed) op te vangen; wachtrijen en afwijkingen lopen sterk op naarmate de geplande bezetting de maximale capaciteit nadert. Een bewust lagere target-utilisatie houdt het systeem stabiel.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom toepasbaar bij Contecto</div><p>Bij Contecto wordt nu impliciet tegen de theoretisch maximale capaciteit gepland, zonder buffer. Dit vormt de theoretische basis onder de aanbevolen Capacity Cushion (20% SMT, 25% THT, gebaseerd op de variatiecoëfficiënten CV 0,68/0,76 en Cs 1,27/1,65): bewust een deel van de capaciteit niet inplannen om de afwijking tussen ingeplande en gerealiseerde uren te verkleinen.</p></div>
+            <div class="tc-row web"><div class="lbl">Achtergrond (extern)</div><p>Het onderliggende paper onderzoekt het effect van forecasterrors op de optimale geplande utilisatie bij stochastische klantvraag: een hogere backorderkostenrate leidt tot een lagere optimale utilisatie en hogere totale kosten. De geplande utilisatie heeft een grote invloed op de optimale kosten.</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport §4.2.2-4.2.3 en Bijlage 4; Altendorfer, K., Felberbauer, T., &amp; Jodlbauer, H. (2016). <i>Effects of forecast errors on optimal utilisation in aggregate production planning with stochastic customer demand.</i> International Journal of Production Research, 54(12). Achtergrond: <a href="https://arxiv.org/pdf/1812.00773" target="_blank" rel="noopener">arXiv-versie van het paper</a>.</div>
+        </details>
+
+        <details class="theory-card">
+          <summary>Design vs. Effective Capacity <span class="yr">Heizer, Render &amp; Munson (2020)</span></summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat stelt de theorie</div><p>Onderscheidt drie capaciteitsniveaus: design capacity (theoretisch maximum), effective capacity (wat werkelijk haalbaar is na verstoringen) en actual output (wat daadwerkelijk gerealiseerd wordt). Het maximum wordt nooit volledig benut, omdat verstoringen en inefficiënties dat onmogelijk maken.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom toepasbaar bij Contecto</div><p>Gebruikt voor deelvraag 4 om de kloof te kwantificeren tussen de theoretische, ingeplande en gerealiseerde capaciteit op SMT en THT. Resultaat: een spiegelbeeldig patroon - op SMT is gerealiseerd &lt; beschikbaar (WMAPE 25,46%), op THT is gerealiseerd &gt; beschikbaar (WMAPE 31,45%) - beide het gevolg van een capaciteitsbaseline die een vaste, toegewijde bezetting veronderstelt die er in werkelijkheid niet is.</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport §4.2.1 (Tabel 6) en Bijlage 4; Heizer, J., Render, B., &amp; Munson, C. (2020). <i>Operations management: Sustainability and supply chain management</i> (13e druk). Pearson.</div>
+        </details>
+
+        <details class="theory-card">
+          <summary>Overall Equipment Effectiveness (OEE) <span class="yr">Nakajima (1988)</span></summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat stelt de theorie</div><p>OEE = Availability x Performance x Quality. Availability meet het aandeel geplande tijd dat een machine daadwerkelijk beschikbaar is (storingen, stilstand); Performance meet de snelheid tijdens draaitijd ten opzichte van het theoretische maximum; Quality meet het aandeel goede producten. Een enkel benuttingscijfer laat niet zien waar capaciteit precies verloren gaat - de drie componenten samen wel.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom toepasbaar bij Contecto</div><p>Bij SMT zijn de OEE-verliezen niet gekwantificeerd: de softwarelicentie voor de pick-and-place machine is beschikbaar maar door netwerkproblemen nog niet operationeel. Het model wordt gebruikt om te beargumenteren dat activering van deze meting (gekozen optie, score 5,00) nodig is om te bepalen welke verliescomponent de WMAPE op SMT veroorzaakt, zodat de normentijden in Ridder iQ bijgesteld kunnen worden.</p></div>
+            <div class="tc-row web"><div class="lbl">Achtergrond (extern)</div><p>Nakajima introduceerde ook een "world-class" OEE-richtwaarde van 85% (uitgesplitst naar bijvoorbeeld 90% availability x 95% performance x 99% quality), ontwikkeld als kernonderdeel van Total Productive Maintenance (TPM).</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport §4.2.2-4.2.3 (Tabel 9) en Bijlage 4; Nakajima, S. (1988). <i>Introduction to TPM: Total productive maintenance.</i> Productivity Press. Achtergrond: <a href="https://en.wikipedia.org/wiki/Overall_equipment_effectiveness" target="_blank" rel="noopener">Wikipedia - OEE</a>.</div>
+        </details>
+
+        <div class="bp-group-label">Kernprobleem 3 - foutieve verwerking van afroeporders</div>
+
+        <details class="theory-card">
+          <summary>Demand Management <span class="yr">Wight (1984)</span></summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat stelt de theorie</div><p>Verschillende ordertypen moeten verschillend in de planning behandeld worden. Het behandelen van een variabele, op afroep ingaande vraag als één vaste, voorspelbare belasting leidt tot capaciteit die wel is ingepland maar niet werkelijk beschikbaar of benodigd is op dat moment: schijncapaciteit.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom toepasbaar bij Contecto</div><p>Afroeporders worden nu hetzelfde behandeld als reguliere orders: alle uren worden op één moment ingepland terwijl de werkelijke afroep gespreid is over batches. Dit vormt de verklarende basis voor het onderscheiden van afroeporders van reguliere orders (8,9% van de orders, maar 33,7% van de voorgecalculeerde uren).</p></div>
+            <div class="tc-row web"><div class="lbl">Achtergrond (extern)</div><p>Wight breidde het klassieke MRP-concept uit naar Manufacturing Resource Planning (MRP II), met capaciteits- en financiële dimensies en demand management-functies zoals forecasting, orderinvoer en master production schedule.</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport §4.3.1 (DV7) en Bijlage 4; Wight, O.W. (1984). <i>Manufacturing resource planning: MRP II</i> (2e druk). Oliver Wight Publications. Achtergrond: <a href="https://www.oliverwight-americas.com/glossary-terms/manufacturing-resource-planning-mrp-ii/" target="_blank" rel="noopener">Oliver Wight Americas - MRP II</a>.</div>
+        </details>
+
+        <details class="theory-card">
+          <summary>MRP Nervousness <span class="yr">Steele (1975)</span></summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat stelt de theorie</div><p>MRP-systemen zijn instabiel: kleine wijzigingen op het hoogste planningsniveau (vraag, leverdatum, batchgrootte) planten zich versterkt voort naar de onderliggende plannen, omdat het systeem bij elke wijziging de onderliggende behoeften en bonnen herberekent.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom toepasbaar bij Contecto</div><p>De Productie Manager verschuift orders handmatig en boekt bij afroeporders alle bewerkingsuren op één datum. Elke verschuiving plant zich voort naar de onderliggende bewerkingen (zie het geïllustreerde voorbeeld van order 2025200431, drie batches over 4,5 maand maar gepland als één datum), wat de planning instabiel maakt en bijdraagt aan de WMAPE.</p></div>
+            <div class="tc-row web"><div class="lbl">Achtergrond (extern)</div><p>Steele's artikel "The nervous MRP system" (1975) is een van de eerste werken die het nervousness-probleem in MRP-systemen beschrijft; dit beïnvloedde later hoe MRP II-systemen werden ontworpen met demand management en closed-loop terugkoppeling.</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport §4.3.2 (DV8) en Bijlage 4; Steele, D.C. (1975). <i>The nervous MRP system: How to do battle.</i> Production and Inventory Management, 16(4), 83-89.</div>
+        </details>
+
+        <details class="theory-card">
+          <summary>Workload Control (WLC) <span class="yr">Land &amp; Gaalman (1998)</span></summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat stelt de theorie</div><p>Een planningsmodel voor gecontroleerde ordervrijgave: het vrijgeven van orders op basis van de actuele werkvloerbelasting houdt wachtrijen beheersbaar. Het artikel toont aan waarom strikte workload-normen bij order release vaak een slechte due-date-performance opleveren, en stelt een verbeterde releasemethode voor.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom toepasbaar bij Contecto</div><p>Gebruikt om te beoordelen of een aangepaste vrijgave de belasting ontlast en de betrouwbaarheid verhoogt. In het gekozen ontwerp voor afroeporders (Optie B) wordt de werkbon per batch bewust naar shopfloor geëxporteerd, conform het WLC-principe: planningsbelasting wordt pas geregistreerd op het moment dat de batch echt wordt vrijgegeven voor productie.</p></div>
+            <div class="tc-row web"><div class="lbl">Achtergrond (extern)</div><p>Het paper beschrijft een combinatie van een periodiek mechanisme (balanceert workload) en een continu mechanisme (voorkomt voortijdige stilstand van werkstations) als verbeterde releasemethode tegenover starre workload-normen.</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport §4.3.3 (DV9) en Bijlage 4; Land, M.J., &amp; Gaalman, G. (1998). <i>The performance of workload control concepts in job shops: Improving the release method.</i> International Journal of Production Economics, 56-57.</div>
+        </details>
+
+        <div class="bp-group-label">Kernprobleem 4 - geen visuele prioriteiten op de werkvloer</div>
+
+        <details class="theory-card">
+          <summary>Schedule Adherence <span class="yr">Heizer, Render &amp; Munson (2020)</span></summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat stelt de theorie</div><p>Meet in hoeverre de gerealiseerde productievolgorde overeenkomt met de geplande volgorde. Waar de WMAPE meet of het totaal aantal uren op de geplande datum wordt gerealiseerd, meet Schedule Adherence of ook de juiste orders in de juiste volgorde worden geproduceerd: een directe graadmeter voor uitvoeringsdiscipline op de werkvloer.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom toepasbaar bij Contecto</div><p>Gebruikt als tweede doelstelling van het onderzoek naast de WMAPE. De gemeten Schedule Adherence over 2025 is 29,53% (kloof van 55,47 procentpunt met de doelstelling van 85%), berekend via Power BI op de tabel VergBewerk in Ridder iQ.</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport §4.4.1 (Tabel 13) en Bijlage 5; Heizer, J., Render, B., &amp; Munson, C. (2020). <i>Operations management</i> (13e druk). Pearson.</div>
+        </details>
+
+        <details class="theory-card">
+          <summary>Visueel management <span class="yr">Hirano (1995); Liker (2004)</span></summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat stelt de theorie</div><p>De status en prioriteit van het werk moet zichtbaar zijn op de werkvloer, zodat iedere medewerker zonder uitleg weet wat als eerste moet. Omdat afwijkingen en prioriteiten direct zichtbaar zijn, kan worden bijgestuurd zonder tussenkomst van een Productie Manager of mondelinge afstemming.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom toepasbaar bij Contecto</div><p>De prioritering verloopt nu mondeling en informeel, en Ridder iQ is op de werkvloer geen betrouwbare bron (WAITINGTIMENEXTSTEP staat overal op nul). Dit onderbouwt de keuze voor het activeren van de bestaande Shopfloor-module als visueel hulpmiddel per werkstation (score 5,00 in de selectiematrix).</p></div>
+            <div class="tc-row web"><div class="lbl">Achtergrond (extern)</div><p>Hirano's boek "5 Pillars of the Visual Workplace" is het standaardwerk achter 5S-implementatie wereldwijd. Liker's "The Toyota Way" (2004) plaatst 5S/visueel management als fundament onder Toyota's 14 principes: het schept de werkplekdiscipline waarop lange-termijndenken en respect voor mensen steunen.</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport §4.4.3 (DV12) en Bijlage 4; Hirano, H. (1995). <i>5 Pillars of the visual workplace.</i> Productivity Press; Liker, J.K. (2004). <i>The Toyota Way.</i> McGraw-Hill. Achtergrond: <a href="https://www.leanproduction.com/5s/5s-history-and-manufacturing/" target="_blank" rel="noopener">Lean Production - geschiedenis 5S</a>.</div>
+        </details>
+
+        <div class="bp-group-label">Toegepaste modellen (Bijlage 5) - geen kernprobleem-theorie</div>
+
+        <details class="theory-card">
+          <summary>WMAPE als maatstaf <span class="yr">Hyndman &amp; Koehler (2006)</span></summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat stelt het model</div><p>WMAPE (Weighted Mean Absolute Percentage Error) meet planningsnauwkeurigheid als gewogen gemiddelde absolute procentuele fout, waarbij grotere orders zwaarder meewegen. Dat geeft een realistischer beeld dan een ongewogen gemiddelde, waarin een kleine order even zwaar telt als een grote.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom gebruikt bij Contecto</div><p>Gebruikt als centrale nulmeting en doelstelling: WMAPE THT 50,53% (afgerond 51%), SMT 64,04% (afgerond 64%), doel ≤10%, berekend op geplande versus gerealiseerde uren over 2025 uit Ridder iQ via Power BI. MAPE, MAE en RMSE zijn aanvullend gebruikt om spreiding en omvang van de foutmarges te tonen.</p></div>
+            <div class="tc-row web"><div class="lbl">Let op - mogelijke kritische vraag</div><p>Hyndman &amp; Koehler (2006) bepleiten in hun artikel zelf vooral de Mean Absolute Scaled Error (MASE) als betere maatstaf dan percentage-foutmaten zoals WMAPE/MAPE, juist vanwege bekende zwaktes van percentagematen (problemen bij waarden rond nul, asymmetrie). Als een examinator vraagt "waarom dan niet MASE": WMAPE is bewust gekozen omdat het - in tegenstelling tot MAPE - wél goed werkt bij dagen met nul geplande uren (de "zero-count"-valkuil), en omdat WMAPE in de praktijk van productieplanning gangbaarder en beter interpreteerbaar is voor stakeholders dan een geschaalde foutmaat als MASE.</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport Bijlage 5; Hyndman, R.J., &amp; Koehler, A.B. (2006). <i>Another look at measures of forecast accuracy.</i> International Journal of Forecasting, 22(4). Achtergrond: <a href="https://robjhyndman.com/hyndsight/wmape.html" target="_blank" rel="noopener">Rob Hyndman - WAPE/WMAPE</a>.</div>
+        </details>
+
+        <details class="theory-card">
+          <summary>Closed-Loop MRP <span class="yr">Wight (1984)</span></summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat stelt het model</div><p>Een planningsmodel met een vastgelegde terugkoppeling tussen werkvloer en planning: een plan zonder die terugkoppeling kan niet bijsturen op de werkelijke uitvoering.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom gebruikt bij Contecto</div><p>Onderbouwt waarom signalen van de werkvloer (vertragingen, knelpunten) in het systeem moeten worden vastgelegd in plaats van mondeling te lopen. Vormt de basis voor de aanbevolen dagelijkse shopfloor standup (max. 10 minuten) met directe verwerking door de Productie Manager in Ridder iQ.</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport §4.4.2 (DV11) en Bijlage 5; Wight, O.W. (1984). <i>Manufacturing resource planning: MRP II.</i> Oliver Wight Publications.</div>
+        </details>
+
+        <details class="theory-card">
+          <summary>BPMN 2.0 <span class="yr">Object Management Group (2013)</span></summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat stelt het model</div><p>Een gestandaardiseerde, internationale modelleertaal voor het visueel vastleggen van bedrijfsprocessen, zodat een eenduidige notatie de huidige en gewenste werkwijze ondubbelzinnig vastlegt.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom gebruikt bij Contecto</div><p>Gebruikt om de planningsstructuur AS-IS en TO-BE vast te leggen, op basis van observatie van de planningsmodule in Ridder iQ en een gesprek met de Operations Manager. Het procesmodel is een eigen deliverable van dit onderzoek.</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport Bijlage 5; Object Management Group (2013). <i>Business Process Model and Notation (BPMN), Version 2.0.2.</i> <a href="https://www.omg.org/spec/BPMN/" target="_blank" rel="noopener">omg.org/spec/BPMN</a>.</div>
+        </details>
+
+        <details class="theory-card">
+          <summary>Informatiestroomdiagram (vereenvoudigde VSM) <span class="yr">afgeleid van Rother &amp; Shook (2003)</span></summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat stelt het model</div><p>Value Stream Mapping brengt materiaal- én informatiestromen door een proces in kaart om verspilling te identificeren. Omdat een volledige VSM ook materiaalstromen en cyclustijden in kaart brengt en dat buiten de scope van dit onderzoek valt, is een vereenvoudigde variant gebruikt die alleen de informatiestromen toont.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom gebruikt bij Contecto</div><p>Gebruikt om de informatiestromen rond prioritering op de werkvloer vast te leggen (deelvraag 10), als basis voor de aanbevolen terugkoppeling tussen werkvloer en planning.</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport Bijlage 5; Rother, M., &amp; Shook, J. (2003). <i>Learning to see: Value stream mapping to add value and eliminate muda.</i> Lean Enterprise Institute.</div>
+        </details>
+
+        <div class="bp-group-label">Onderzoeksmethodes (Bijlage 6)</div>
+
+        <details class="theory-card">
+          <summary>Expert-validatie, Gemba-walk &amp; participatieve observatie</summary>
+          <div class="tc-body">
+            <div class="tc-row"><div class="lbl">Wat de methode inhoudt</div><p>Expert-validatie toetst bevindingen en aanbevelingen bij mensen met directe praktijk- en systeemkennis. Een Gemba-walk is gerichte, directe observatie op de plek waar het werk gebeurt. Participatieve observatie (meeloopdag) bouwt praktijkkennis op door zelf mee te werken in het proces.</p></div>
+            <div class="tc-row"><div class="lbl">Waarom gebruikt bij Contecto</div><p>Toegepast in validatiegesprekken met de Productie Manager, de Operations Manager en een externe Ridder-implementatiepartner; een Gemba-walk op de THT-vloer (18 mei 2026, twee momenten van 30-60 min.); en twee meeloopdagen op THT plus een halve dag op SMT (maart 2026). Dit levert details zichtbaar die in cijfers en gesprekken alleen onzichtbaar blijven, en borgt dat het ontwerp logisch en haalbaar is voor de werkvloer.</p></div>
+          </div>
+          <div class="tc-src">Bron: Adviesrapport Bijlage 6 Onderzoeksmethodes.</div>
+        </details>
+
+        <div class="bp-src">Bron: Adviesrapport Productieplanning 2.0 (Senn Lauwers, versie 1, 11-06-2026), Bijlage 4 Theoretisch kader, Bijlage 5 Toegepaste modellen, Bijlage 6 Onderzoeksmethodes, Bronvermelding p.67-68.</div>
+      </div>
+
+      <div class="bp-sec" id="bp-selectie">
+        <h4>Selectiematrices - exacte scores (Adviesrapport hoofdstuk 4)</h4>
+        <p class="note">Methode (Bijlage 9): elke optie scoort per criterium 1-5 (5 = voldoet volledig, 3 = neutraal, 1 = voldoet niet). Eindscore = som van gewicht x score, gewichten per matrix tellen op tot 1,00. Gewichten zijn door de onderzoeker bepaald op basis van de doelstelling, geen Ridder iQ-meetwaarde.</p>
+        <table>
+          <tr><th>Kernprobleem</th><th>Keuze (Tabel)</th><th>Gekozen optie</th><th>Score</th><th>Op-1-na-beste</th></tr>
+          <tr><td>KP 1</td><td>Tabel 3 - THT-werkstations</td><td>4 stations samenvoegen tot 1 (groot detailverlies maar geen meerwaarde apart)</td><td>5,00</td><td>1,80</td></tr>
+          <tr><td>KP 1</td><td>Tabel 4 - Vapor/Reflow</td><td>Optie C: Reflow + Vapor gecombineerd (2 werkstations)</td><td>4,60</td><td>3,80 (Optie B, 3 stations)</td></tr>
+          <tr><td>KP 2</td><td>Tabel 7 - herkalibratie baseline</td><td>Optie A: periodieke handmatige herijking door PM via Power BI</td><td>4,45</td><td>3,85</td></tr>
+          <tr><td>KP 2</td><td>Tabel 8 - Capacity Cushion</td><td>Optie A: vaste capaciteitsgrens, overschrijfbaar via CommandScript bij spoed</td><td>4,60 (onder voorbehoud)</td><td>3,80 (Optie C)</td></tr>
+          <tr><td>KP 2</td><td>Tabel 9 - OEE-meting SMT</td><td>Optie A: activeer bestaande softwarelicentie pick-and-place</td><td>5,00</td><td>3,40</td></tr>
+          <tr><td>KP 3</td><td>Tabel 11 - afroeporderverwerking</td><td>Optie B: batchconfiguratie op offerteniveau + boncorrectie bij productieorder</td><td>5,00</td><td>2,30</td></tr>
+          <tr><td>KP 4</td><td>Tabel 14 - terugkoppeling werkvloer</td><td>Optie A: dagelijkse shopfloor standup (max. 10 min.) + verwerking in Ridder iQ</td><td>5,00</td><td>4,00</td></tr>
+          <tr><td>KP 4</td><td>Tabel 15 - visuele prioritering</td><td>Optie A: Shopfloor-module Ridder iQ als primair prioriteitenoverzicht</td><td>5,00</td><td>3,00</td></tr>
+        </table>
+        <p class="note">Drie wegingsprincipes gelden voor alle matrices (Bijlage 9): (1) het criterium dat het kerndoel (WMAPE/regie) raakt weegt 0,30-0,35; (2) criteria uit de randvoorwaarden (administratieve last, technische haalbaarheid in Ridder iQ) wegen 0,15-0,25; (3) ondersteunende criteria (beheerlast, duurzaamheid) wegen 0,10-0,20.</p>
+        <div class="bp-src">Bron: Adviesrapport Productieplanning 2.0, hoofdstuk 4.1-4.4 (Tabel 3, 4, 7, 8, 9, 11, 14, 15) en Bijlage 9 Onderbouwing van de weging in de selectiematrices.</div>
+      </div>
+
+      <div class="bp-sec" id="bp-nulmeting">
+        <h4>Power BI - nulmeting kalenderjaar 2025 (exacte cijfers)</h4>
+        <table>
+          <tr><th>Indicator</th><th>Waarde 2025</th><th>Norm</th><th>Bron in Ridder iQ</th></tr>
+          <tr><td>WMAPE - THT (gepland vs. gerealiseerd)</td><td>50,53% (afgerond 51%)</td><td>≤10%</td><td>Power BI op Ridder iQ-export</td></tr>
+          <tr><td>WMAPE - SMT (gepland vs. gerealiseerd)</td><td>64,04% (afgerond 64%)</td><td>≤10%</td><td>Power BI op Ridder iQ-export</td></tr>
+          <tr><td>WMAPE - SMT (beschikbaar vs. gerealiseerd)</td><td>25,46%</td><td>diagnostisch, geen doelnorm</td><td>idem</td></tr>
+          <tr><td>WMAPE - THT (beschikbaar vs. gerealiseerd)</td><td>31,45%</td><td>diagnostisch, geen doelnorm</td><td>idem</td></tr>
+          <tr><td>Schedule Adherence</td><td>29,53% (kloof 55,47 procentpunt)</td><td>≥85%</td><td>tabel VergBewerk, Power BI</td></tr>
+          <tr><td>Afroeporders - aandeel orders/regels/pakbonnen</td><td>8,9% / 9% / 12,5%</td><td>-</td><td>orderdata Ridder iQ</td></tr>
+          <tr><td>Afroeporders - aandeel voorgecalculeerde uren</td><td>33,7% (5.517,29 van 16.361,57 uur)</td><td>-</td><td>berekende kolom VC Bewerking</td></tr>
+        </table>
+        <div class="bp-flag">Belangrijke nuance bij KP3: de WMAPE-bijdrage van afroeporders specifiek is <b>niet reproduceerbaar te meten</b> - twee onafhankelijke Ridder iQ-exports gaven inconsistente uitkomsten, omdat planning en realisatie bij afroeporders op een structureel verschillend aggregatieniveau staan. Dit is in het rapport zelf als bevinding benoemd, niet als beperking verzwegen. Noem dit gerust proactief als de examinator naar exacte afroep-WMAPE vraagt.</div>
+        <div class="bp-src">Bron: Adviesrapport Productieplanning 2.0, §4.1.1 (Tabel 6), §4.3.1 (DV7), §4.4.1 (Tabel 13), Bijlage 20 Nulmeting Contecto.</div>
+      </div>
+
+      <div class="bp-sec" id="bp-oee">
+        <h4>OEE - Overall Equipment Effectiveness</h4>
+        <p class="note">Concrete OEE-percentages (beschikbaarheid x prestatie x kwaliteit) voor Contecto staan ook in het definitieve Adviesrapport niet. Expliciet citaat uit het rapport: "Bij SMT zijn deze OEE-verliezen niet gekwantificeerd."</p>
+        <ul class="clean" style="gap:8px">
+          <li>Model: Nakajima (1988) - splitst verliezen uit naar availability, performance en quality.</li>
+          <li>Status: de softwarelicentie voor de meting op de pick-and-place machine is al beschikbaar, maar door netwerkproblemen nog niet operationeel geïmplementeerd.</li>
+          <li>Gekozen aanpak: Optie A "activeer bestaande softwarelicentie" scoort 5,00 in de selectiematrix (Tabel 9), tegen 2,80 voor handmatige meting en 3,40 voor uitstellen.</li>
+          <li>Doel van de meting: bepalen welke verliescomponent de WMAPE op SMT veroorzaakt, zodat de normentijden in Ridder iQ bijgesteld kunnen worden.</li>
+        </ul>
+        <div class="bp-flag">Bij een vraag naar het huidige OEE-percentage: expliciet benoemen dat dit (nog) niet gekwantificeerd is bij Contecto - dat is zelf een onderdeel van de diagnose, geen omissie in de presentatie.</div>
+        <div class="bp-src">Bron: Adviesrapport Productieplanning 2.0, §4.2.2 (Parameter 3) en §4.2.3 (Correctie 3, Tabel 9).</div>
+      </div>
+
+      <div class="bp-sec" id="bp-knoster">
+        <h4>Knoster (1991) - 5 elementen van verandering</h4>
+        <p class="note">Correcte 5 elementen volgens het Adviesrapport (§6.2.1): visie, belang, plan, middelen, competenties.</p>
+        <table>
+          <tr><th>Element</th><th>Ontbreekt → symptoom</th></tr>
+          <tr><td>Visie</td><td>Verwarring</td></tr>
+          <tr><td>Belang</td><td>Weerstand</td></tr>
+          <tr><td>Plan</td><td>Chaos</td></tr>
+          <tr><td>Middelen</td><td>Frustratie</td></tr>
+          <tr><td>Competenties</td><td>Angst</td></tr>
+        </table>
+        <h4 style="margin-top:18px">Toepassing op de kernproblemen (§6.2.2-6.2.5)</h4>
+        <table>
+          <tr><th>Kernprobleem</th><th>Risicovol/ontbrekend element</th><th>Toelichting</th></tr>
+          <tr><td>KP 1 - disaggregatie</td><td>Belang + middelen</td><td>Productie Manager moet op werkstationniveau plannen; risico dat meerwaarde niet wordt ervaren, en extra plantijd structureel beschikbaar moet zijn</td></tr>
+          <tr><td>KP 2 - capaciteitsparameters</td><td>Plan</td><td>Zonder vast eigenaarschap en update-cyclus vervalt een eenmalige correctie weer (Knoster voorspelt chaos)</td></tr>
+          <tr><td>KP 3 - afroeporders</td><td>Belang bij Sales</td><td>Nieuwe werkwijze vereist aanpassing in Sales-proces; belang (betrouwbaardere leverafspraken) moet expliciet gemaakt worden</td></tr>
+          <tr><td>KP 4 - shopfloor sturing</td><td>Belang bij teamleads</td><td>Grootste weerstandsrisico: informele regierol van teamleads verschuift naar systemisch gestuurde werkwijze (ervaren autonomieverlies)</td></tr>
+        </table>
+        <p class="note">Organisatiecultuur (kleurenmodel De Caluwé &amp; Vermaak, 2015): dominant groen, 46,7%. Een groene cultuur vraagt participatief veranderingsmanagement; dit verklaart waarom elke fase met pilots en betrokkenheid van de doelgroep is ingericht in plaats van top-down opgelegd.</p>
+        <div class="bp-src">Bron: Adviesrapport Productieplanning 2.0, §6.1 Kleurenmodel Caluwé en §6.2 Weerstandsanalyse (Knoster, 1991; De Caluwé &amp; Vermaak, 2015).</div>
+      </div>
+
+      <div class="bp-sec" id="bp-greiner">
+        <h4>Greiner (1972) - groeimodel en controlecrisis</h4>
+        <p class="note">Greiner onderscheidt vijf (later zes) groeifasen, elk gedragen door een eigen besturingsvorm. Elke fase eindigt in een crisis die om een nieuwe besturingsvorm vraagt: zonder die overgang loopt de organisatie vast.</p>
+        <table>
+          <tr><th>Fase (besturingsvorm)</th><th>Crisis die de fase beëindigt</th></tr>
+          <tr><td>1. Creativiteit</td><td>Leiderschapscrisis</td></tr>
+          <tr><td>2. Sturing / richting</td><td>Autonomiecrisis</td></tr>
+          <tr><td>3. Delegatie</td><td><b>Controlecrisis</b> ← Contecto bevindt zich hier</td></tr>
+          <tr><td>4. Coördinatie</td><td>Bureaucratiecrisis ("red tape")</td></tr>
+          <tr><td>5. Samenwerking</td><td>(in latere literatuur: crisis rond psychologische verzadiging)</td></tr>
+          <tr><td>6. Allianties (toegevoegd in 1998, niet in het origineel uit 1972)</td><td>-</td></tr>
+        </table>
+        <p class="note">Toepassing bij Contecto (Adviesrapport §2.2/§2.6.1): de fase van creativiteit (2002, pionier mechatronica) ging via toenemende omvang over in de sturingsfase, gemarkeerd door de invoering van Ridder iQ. Sinds 2019 is de orderstroom verviervoudigd en is de organisatie in de delegatiefase (fase 3) beland: de dagelijkse planning is gedecentraliseerd naar de werkvloer. Dit heeft geleid tot een <b>controlecrisis</b>: teamleads verschuiven orders handmatig buiten Ridder iQ om, waardoor het management de centrale regie over de totale capaciteit verliest. Productieplanning 2.0 moet de overgang naar de volgende fase (coördinatie, via formele systemen en data-gedreven sturing) mogelijk maken.</p>
+        <div class="bp-src">Bron: Adviesrapport Productieplanning 2.0, §2.2 Aanleiding en §4.1.2 (Greiner, 1972); oorspronkelijke theorie: Greiner, L.E. (1972). <i>Evolution and revolution as organizations grow</i>. Harvard Business Review, 50(4). Achtergrond/samenvatting: <a href="https://en.wikipedia.org/wiki/Larry_E._Greiner" target="_blank" rel="noopener">Wikipedia - Larry E. Greiner</a>; <a href="https://www.toolshero.com/strategy/greiner-growth-model/" target="_blank" rel="noopener">Toolshero - Greiner Growth Model</a>.</div>
+      </div>
+
+      <div class="bp-sec" id="bp-caluwe">
+        <h4>Kleurenmodel De Caluwé &amp; Vermaak (2015) - vijf manieren van denken over veranderen</h4>
+        <p class="note">Geen kleur is "goed" of "fout" - elke kleur is een aanname over wat mensen in beweging brengt, en effectief binnen een bepaalde context.</p>
+        <table>
+          <tr><th>Kleur</th><th>Kernaanname</th><th>Score bij Contecto</th></tr>
+          <tr><td>Geel (machtsdenken)</td><td>Mensen veranderen door belangen te bundelen, macht en coalities te vormen</td><td>13%</td></tr>
+          <tr><td>Blauw (planmatig denken)</td><td>Mensen veranderen door vooraf een doel en een stappenplan vast te leggen</td><td>27%</td></tr>
+          <tr><td>Rood (mensgericht denken)</td><td>Mensen veranderen door te verleiden, te motiveren en te belonen</td><td>8%</td></tr>
+          <tr><td>Groen (leergericht denken)</td><td>Mensen veranderen door zelf te leren, te reflecteren en bewust te worden</td><td><b>46,7% - dominant</b></td></tr>
+          <tr><td>Wit (zelforganiserend denken)</td><td>Mensen en organisaties veranderen vanzelf; de veranderaar faciliteert en verwijdert obstakels</td><td>4,4%</td></tr>
+        </table>
+        <p class="note">Toepassing bij Contecto (Adviesrapport §6.1): de vragenlijst is afgenomen op de productievloer en wijst groen als dominante kleur aan. Dit betekent dat medewerkers openstaan voor verandering, mits zij worden betrokken en ruimte krijgen om te experimenteren en te leren. Top-down opgelegde verandering (blauw/geel) past niet bij deze cultuur en vergroot het risico op weerstand. Dit is de reden dat het implementatieplan (hoofdstuk 6.3) is opgebouwd met pilots, betrokkenheid van teamleads en expliciete evaluatiemomenten in plaats van een vast, van bovenaf opgelegd protocol.</p>
+        <div class="bp-src">Bron: Adviesrapport Productieplanning 2.0, §6.1 Kleurenmodel Caluwé (Tabel 18 Scores vragenlijst) en Bijlage 21 Organisatiecultuur Caluwé; oorspronkelijke theorie: De Caluwé, L., &amp; Vermaak, H. (2015). <i>Leren veranderen: een handboek voor de veranderkundige</i> (3e druk). Boom uitgevers. Achtergrond: <a href="https://www.decaluwe.nl/articles/DenkenOverVeranderenInVijfKleuren.pdf" target="_blank" rel="noopener">De Caluwé - Denken over veranderen in vijf kleuren (origineel artikel, pdf)</a>; <a href="https://www.toolshero.nl/verandermanagement/kleurdenken-caluwe-vermaak/" target="_blank" rel="noopener">Toolshero - Kleurdenken De Caluwé &amp; Vermaak</a>.</div>
+      </div>
+
+      <div class="bp-sec" id="bp-bv">
+        <h4>Betrouwbaarheid &amp; validiteit per deelvraag (Adviesrapport Bijlage 8)</h4>
+        <table>
+          <tr><th>DV</th><th>Betrouwbaarheid</th><th>Validiteit</th></tr>
+          <tr><td>1 (WMAPE-nulmeting)</td><td>Volledige orderpopulatie 2025, reproduceerbaar in Power BI</td><td>WMAPE is een erkende maat die aansluit op de doelstelling</td></tr>
+          <tr><td>2 (Planningsstructuur)</td><td>Herhaalbare observatie, levert bij herhaling hetzelfde beeld</td><td>Toetsing aan interview en planningstheorie</td></tr>
+          <tr><td>3 (Disaggregatie)</td><td>Werkstations getoetst aan feitelijke indeling Ridder iQ</td><td>Werkstationniveau steunt op meerdere onafhankelijke bronnen</td></tr>
+          <tr><td>4 (Capaciteitskloof)</td><td>Cijfers rechtstreeks uit Ridder iQ, roostertijden geverifieerd</td><td>Onderscheid drie capaciteitsvormen volgt erkend kader (Heizer et al., 2020)</td></tr>
+          <tr><td>5 (Capaciteitsparameters)</td><td>Overeenstemming observaties en interviews</td><td>Elke parameter herleidbaar tot een afzonderlijk theoretisch kader</td></tr>
+          <tr><td>6 (Capaciteitscorrecties)</td><td>Variatiecoëfficiënten berekend over volledige dataset 2025</td><td>Capacity Cushion theoretisch onderbouwd (Altendorfer et al., 2016)</td></tr>
+          <tr><td>7 (Aandeel afroeporders)</td><td>Analyse over volledige orderpopulatie 2025, één data-export</td><td>Theoretische verankering in Demand Management (Wight, 1984)</td></tr>
+          <tr><td>8 (Impact afroeporders)</td><td>Triangulatie interview, observatie en data-analyse</td><td>Waargenomen mechanisme sluit aan op MRP Nervousness (Steele, 1975)</td></tr>
+          <tr><td>9 (Alternatieve verwerking)</td><td>Alternatieven bevestigd door drie betrokken managers</td><td>Selectie steunt op vier criteria en een theoretisch raamwerk</td></tr>
+          <tr><td>10 (Uitvoeringsvolgorde)</td><td>Triangulatie data-analyse, Gemba walk en interviews</td><td>Schedule Adherence is erkende maat, aansluitend op de norm van 85%</td></tr>
+          <tr><td>11 (Terugkoppeling)</td><td>Overeenstemming observatie, Gemba walk en interviews</td><td>Aanbevolen terugkoppeling gefundeerd op gevestigde principes (Closed-Loop MRP)</td></tr>
+          <tr><td>12 (Visuele prioritering)</td><td>Afgestemd met PM en teamleads, getoetst in workshop Realisatieteam</td><td>Voorstel steunt op erkend principe van visueel management</td></tr>
+        </table>
+        <div class="bp-src">Bron: Adviesrapport Productieplanning 2.0, Bijlage 8 Betrouwbaarheid en validiteit (Tabel 27).</div>
+      </div>
+
+      <div class="bp-sec" id="bp-qa">
+        <h4>5 waarschijnlijke vragen met ankerantwoord</h4>
+        <div class="bp-qa">
+          <div class="q">1. Wat is precies het verschil tussen theorie, model en methode in jouw kader?</div>
+          <p class="a">Theorie verklaart waaróm de planningsproblematiek ontstaat (bv. Greiner: controlecrisis, Galbraith: informatieverwerkingstekort). Een model of maatstaf structureert of meet een deel van het probleem (bv. WMAPE van Hyndman &amp; Koehler, OEE van Nakajima, het kleurenmodel van De Caluwé). Methode is hoe ik het zelf heb onderzocht: kwantitatieve data-analyse in Power BI op Ridder iQ-data 2025, semigestructureerde interviews met Operations Manager, Productie Manager en Sales Manager, en een Gemba walk op 18 mei 2026, getoetst via expert-validatie.</p>
+        </div>
+        <div class="bp-qa">
+          <div class="q">2. Waarom een WMAPE-norm van 10% en een Schedule Adherence van 85%? Waar komt dat vandaan?</div>
+          <p class="a">De literatuur geeft geen eenduidige normwaarde voor WMAPE of Schedule Adherence. Daarom zijn de grenswaarden vastgesteld in overleg met de Operations Manager: ≤10% WMAPE en ≥85% Schedule Adherence gelden bij Contecto als operationeel aanvaardbaar, omdat waarden buiten die grenzen in de praktijk tot aantoonbare verstoringen leiden. De normen zijn dus bedrijfsspecifiek gekozen, niet universeel wetenschappelijk afgeleid (Adviesrapport §2.5.2, met verwijzing naar Team HAN-TBK, 2019). Wel is de keuze voor WMAPE als foutmaatstaf zelf literatuurmatig onderbouwd (Hyndman &amp; Koehler, 2006), en in de evaluatie (§7.1) wordt 10%/85% ook beschreven als een gangbare praktijkbenchmark conform Hyndman &amp; Koehler (2006), Heizer et al. (2020) en Hopp &amp; Spearman (2011). Beide dingen zijn dus waar: de norm is met de Operations Manager afgesproken, én die afspraak ligt in lijn met wat de literatuur als redelijke praktijkbenchmark beschouwt.</p>
+        </div>
+        <div class="bp-qa">
+          <div class="q">3. Waarom valt de evaluatie buiten de scope van dit onderzoek?</div>
+          <p class="a">De PDOVE-cyclus doorloopt in dit afstudeerproject volledig Probleemidentificatie, Diagnose en Ontwerp; Verandering en Evaluatie liggen na de scriptiedeadline van 1 juli 2026 en vallen buiten de opdracht. Een praktijkevaluatie van de nieuwe WMAPE-cijfers is daardoor niet mogelijk binnen de tijdspanne van het onderzoek. In plaats daarvan toetst hoofdstuk 7 (Evaluatie van de doelstelling) of elke aangetoonde oorzaak van de huidige afwijking door een maatregel wordt afgedekt, en of de normen na implementatie betrouwbaar te meten zijn - niet of het resultaat al een meetbare zekerheid is.</p>
+        </div>
+        <div class="bp-qa">
+          <div class="q">4. Hoe is de betrouwbaarheid en validiteit van je onderzoek geborgd?</div>
+          <p class="a">Per deelvraag apart vastgelegd in Bijlage 8: betrouwbaarheid via reproduceerbare Power BI-analyses op de volledige orderpopulatie 2025 en herhaalbare observaties; validiteit via aansluiting op erkende maatstaven (WMAPE, Schedule Adherence, OEE) en theoretische kaders, plus expert-validatie door de Productie Manager, de Operations Manager en een externe Ridder-implementatiepartner. Eén belangrijke uitzondering wordt expliciet benoemd: de WMAPE-bijdrage van afroeporders specifiek is niet reproduceerbaar meetbaar, omdat Ridder iQ planning en realisatie op een structureel verschillend aggregatieniveau plaatst. Dat zelf wordt in het rapport als bevinding gepresenteerd, niet verzwegen.</p>
+        </div>
+        <div class="bp-qa">
+          <div class="q">5. Waarom deze volgorde van invoeren?</div>
+          <p class="a">De roadmap (§6.3) loopt: Fase 0 voorbereiding/draagvlak, Fase 1 KP3 afroeporders (spoedtraject, parallel aan Fase 0 omdat de technische oplossing al in de eindtestfase zit), Fase 2 KP2 capaciteitsparameters, Fase 3 KP1 planningsniveau, Fase 4 KP4 shopfloor sturing. De kernafhankelijkheid is dat KP2 vóór KP1 moet: plannen op werkstationniveau heeft geen waarde als de onderliggende capaciteitsdata niet kloppen, anders ontstaat schijnnauwkeurigheid. KP4 staat laatst omdat daar het grootste weerstandsrisico zit (autonomieverlies teamleads); dat risico is beter te dragen nadat de organisatie eerst zichtbare resultaten heeft geboekt. KP3 is geen onderdeel van die afhankelijkheidsketen, maar een al lopend spoedtraject dat toevallig gelijktijdig start.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const hash=location.hash;
+  const peekMatch=hash.match(/^#audience-peek-(\d+)$/);
+  const isPeek=!!peekMatch;
+  const isAudience=hash==='#audience'||isPeek;
+  const mode=isPeek?'peek':(isAudience?'audience':'presenter');
+  document.body.classList.add(isAudience?'mode-audience':'mode-presenter');
+  if(isPeek)document.body.classList.add('mode-peek');
+
+  const slides=[...document.querySelectorAll('.slide')];
+  const total=slides.length;
+  let cur=0;
+  let stepIdx=0;
+  let currentSteps=[];
+
+  const phaseOrder={P:0,D:1,O:2,V:3};
+  const deck=document.getElementById('deck');
+  const pdoveEl=document.getElementById('pdove');
+  const counter=document.getElementById('counter');
+  const progress=document.getElementById('progress');
+  const notesPanel=document.getElementById('notes');
+  const ntext=document.getElementById('ntext');
+  const ncount=document.getElementById('ncount');
+  const help=document.getElementById('help');
+  const backupLock=document.getElementById('backupLock');
+  const backupPanel=document.getElementById('backupPanel');
+  const lockInput=document.getElementById('lockInput');
+  const lockErr=document.getElementById('lockErr');
+  const lockBtn=document.getElementById('lockBtn');
+  const bpClose=document.getElementById('bpClose');
+  const BACKUP_CODE='2026';
+
+  function openLock(){
+    if(backupPanel.classList.contains('open'))return;
+    backupLock.classList.add('open');
+    lockErr.innerHTML='&nbsp;';
+    lockInput.value='';
+    setTimeout(()=>lockInput.focus(),10);
+  }
+  function closeLock(){backupLock.classList.remove('open');}
+  function tryUnlock(){
+    if(lockInput.value.trim().toLowerCase()===BACKUP_CODE){
+      closeLock();
+      backupPanel.classList.add('open');
+    } else {
+      lockErr.textContent='Onjuiste code.';
+      lockInput.value='';
+      lockInput.focus();
+    }
+  }
+  function closeBackup(){backupPanel.classList.remove('open');}
+
+  if(lockBtn)lockBtn.addEventListener('click',tryUnlock);
+  if(lockInput)lockInput.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){e.preventDefault();tryUnlock();}
+    else if(e.key==='Escape'){e.preventDefault();closeLock();}
+  });
+  if(bpClose)bpClose.addEventListener('click',closeBackup);
+  if(backupPanel)document.querySelectorAll('.bp-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{
+      document.querySelectorAll('.bp-tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.bp-sec').forEach(s=>s.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('bp-'+tab.dataset.bp).classList.add('active');
+    });
+  });
+  const pbCounter=document.getElementById('pbCounter');
+  const pbTimer=document.getElementById('pbTimer');
+  const pbReset=document.getElementById('pbReset');
+  const pbLinkStatus=document.getElementById('pbLinkStatus');
+  const pbDot=document.getElementById('pbDot');
+  const pbOpenAudience=document.getElementById('pbOpenAudience');
+  const peekFrame=document.getElementById('peekFrame');
+  let audienceWin=null;
+  let timerStart=Date.now();
+
+  const steps=[['P','Probleem'],['D','Diagnose'],['O','Ontwerp'],['V','Verandering'],['E','Evaluatie']];
+  pdoveEl.innerHTML=steps.map((s,i)=>{
+    const sep=i<steps.length-1?'<span class="sep"></span>':'';
+    return `<div class="step" data-letter="${s[0]}"><span class="dot">${s[0]}</span><span class="lbl">${s[1]}</span></div>${sep}`;
+  }).join('');
+  const stepEls=[...pdoveEl.querySelectorAll('.step')];
+
+  function buildSteps(slide){
+    // Elke stap is een array van elementen. Elementen met hetzelfde
+    // data-group horen bij dezelfde stap en verschijnen dus tegelijk.
+    const steps=[];
+    const groups={};
+    const isStep=el=>el.classList.contains('fragment')||
+      el.matches('[data-bar],.kpnode,[data-exp],.phase,[data-th],.caluwe,[data-kn]');
+    const walker=document.createTreeWalker(slide,NodeFilter.SHOW_ELEMENT,null);
+    let node;
+    while(node=walker.nextNode()){
+      if(!isStep(node))continue;
+      const g=node.dataset.group;
+      if(g!=null&&groups[g])groups[g].push(node);
+      else{
+        const step=[node];
+        steps.push(step);
+        if(g!=null)groups[g]=step;
+      }
+    }
+    return steps;
+  }
+
+  function activateStep(step){
+    if(step.classList.contains('fragment')){
+      step.classList.add('vis');
+    } else if(step.matches('[data-bar]')||step.matches('[data-exp]')||step.matches('.phase')){
+      step.classList.add('open');
+    } else if(step.matches('.kpnode')){
+      const kluwenTexts={'1':'KP 1 - Er wordt gepland op bewerkingsgroepniveau in plaats van op werkstationniveau, waardoor capaciteitsknelpunten onzichtbaar blijven.','2':'KP 2 - De beschikbare capaciteit in Ridder iQ klopt niet: er wordt tegen oneindige capaciteit gepland, zonder verzuim, stilstand of flexibele inzet.','3':'KP 3 - Afroeporders worden foutief verwerkt: alle uren op één vroege datum, wat schijncapaciteit oplevert (33,7% van de uren).','4':'KP 4 - Er is geen visuele prioriteit op de werkvloer; prioriteiten zijn mondeling en persoonsafhankelijk (Schedule Adherence 29,53%).'};
+      document.querySelectorAll('.kpnode').forEach(n=>n.classList.remove('sel'));
+      step.classList.add('sel');
+      const kluwenDetail=document.getElementById('kluwenDetail');
+      if(kluwenDetail){
+        kluwenDetail.textContent=kluwenTexts[step.dataset.kp];
+        kluwenDetail.classList.add('vis');
+      }
+    }
+  }
+
+  function deactivateStep(step){
+    if(step.classList.contains('fragment')){
+      step.classList.remove('vis');
+    } else if(step.matches('[data-bar]')||step.matches('[data-exp]')||step.matches('.phase')){
+      step.classList.remove('open');
+    } else if(step.matches('.kpnode')){
+      step.classList.remove('sel');
+      const kluwenDetail=document.getElementById('kluwenDetail');
+      if(kluwenDetail&&!document.querySelector('.kpnode.sel'))kluwenDetail.classList.remove('vis');
+    } else if(step.matches('[data-th]')||step.matches('.caluwe')||step.matches('[data-kn]')){
+      step.classList.remove('vis');
+    }
+  }
+
+  function updateChrome(){
+    const slide=slides[cur];
+    const phase=slide.dataset.phase;
+    const cover=slide.classList.contains('cover-slide');
+    document.body.classList.toggle('cover',cover);
+
+    if(phase&&phase!=='done'){
+      pdoveEl.style.visibility='visible';
+      const co=phaseOrder[phase];
+      stepEls.forEach(el=>{
+        const L=el.dataset.letter;
+        el.className='step';
+        if(L==='E'){el.classList.add('out');return;}
+        const o=phaseOrder[L];
+        if(o<co)el.classList.add('done');
+        else if(o===co)el.classList.add('active');
+      });
+    } else {
+      pdoveEl.style.visibility='hidden';
+    }
+
+    counter.textContent=(cur+1)+' / '+total;
+    progress.style.width=(cur/(total-1)*100)+'%';
+
+    const n=slide.querySelector('.notes');
+    ntext.innerHTML=n?n.innerHTML:'';
+    ncount.textContent=(cur+1)+' / '+total;
+
+    if(pbCounter)pbCounter.textContent=(cur+1)+' / '+total;
+    if(mode==='presenter')updatePeek();
+  }
+
+  function updatePeek(){
+    if(!peekFrame)return;
+    const nextIdx=Math.min(cur+1,total-1);
+    const want='#audience-peek-'+(nextIdx+1);
+    if(peekFrame.dataset.cur!==want){
+      peekFrame.dataset.cur=want;
+      // Query-param maakt de URL echt anders, anders ziet de browser het als
+      // navigatie binnen hetzelfde document en herlaadt de iframe niet.
+      peekFrame.src=location.href.split('#')[0].split('?')[0]+'?p='+nextIdx+want;
+    }
+  }
+
+  function show(idx,fromBack){
+    idx=Math.max(0,Math.min(total-1,idx));
+    slides[cur].classList.remove('active');
+    cur=idx;
+    stepIdx=0;
+    currentSteps=buildSteps(slides[cur]);
+    if(!fromBack)currentSteps.forEach(g=>g.forEach(deactivateStep));
+    else currentSteps.forEach(g=>g.forEach(activateStep));
+    slides[cur].classList.add('active');
+    updateChrome();
+  }
+
+  function next(){
+    if(stepIdx<currentSteps.length){
+      currentSteps[stepIdx].forEach(activateStep);
+      stepIdx++;
+      return;
+    }
+    if(cur<total-1)show(cur+1,false);
+  }
+
+  function prev(){
+    if(stepIdx>0){
+      stepIdx--;
+      currentSteps[stepIdx].forEach(deactivateStep);
+      return;
+    }
+    if(cur>0)show(cur-1,true);
+  }
+
+  function handleKey(key,ctrl){
+    if(ctrl&&key==='ArrowRight'){show(cur+1,false);return;}
+    if(ctrl&&key==='ArrowLeft'){show(cur-1,true);return;}
+    if(key==='ArrowRight'||key===' '||key==='PageDown'){next();return;}
+    if(key==='ArrowLeft'||key==='PageUp'){prev();return;}
+    if(key==='Home'){show(0,true);return;}
+    if(key==='End'){show(total-1,true);}
+  }
+
+  function toggleFullscreen(){
+    if(!document.fullscreenElement)document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+  }
+
+  function sendKeyToPresenter(key,ctrl){
+    if(window.opener&&!window.opener.closed){
+      window.opener.postMessage({type:'audience-key',key:key,ctrl:!!ctrl},'*');
+    }
+  }
+
+  function setLinkStatus(linked){
+    if(pbDot)pbDot.classList.toggle('live',linked);
+    if(pbLinkStatus)pbLinkStatus.textContent=linked?'Publieksscherm gekoppeld':'Niet gekoppeld';
+    if(pbOpenAudience)pbOpenAudience.classList.toggle('linked',linked);
+  }
+
+  function broadcastState(){
+    if(!audienceWin||audienceWin.closed)return;
+    audienceWin.postMessage({type:'deck-sync',html:deck.innerHTML,cur:cur,total:total},'*');
+  }
+
+  function setupPresenterSync(){
+    setInterval(()=>{
+      const s=Math.floor((Date.now()-timerStart)/1000);
+      const mm=String(Math.floor(s/60)).padStart(2,'0');
+      const ss=String(s%60).padStart(2,'0');
+      if(pbTimer)pbTimer.textContent=mm+':'+ss;
+    },1000);
+
+    if(pbReset)pbReset.addEventListener('click',()=>{
+      timerStart=Date.now();
+      if(pbTimer)pbTimer.textContent='00:00';
+    });
+
+    if(pbOpenAudience)pbOpenAudience.addEventListener('click',()=>{
+      if(audienceWin&&!audienceWin.closed){audienceWin.focus();return;}
+      audienceWin=window.open(location.href.split('#')[0]+'#audience','presentatie-publiek');
+      if(!audienceWin)alert('Kan het publieksscherm niet openen. Sta pop-ups toe voor dit bestand.');
+    });
+
+    window.addEventListener('message',e=>{
+      const d=e.data;
+      if(!d)return;
+      if(d.type==='audience-ready'){
+        audienceWin=e.source;
+        setLinkStatus(true);
+        broadcastState();
+      } else if(d.type==='audience-key'){
+        handleKey(d.key,d.ctrl);
+      }
+    });
+
+    new MutationObserver(broadcastState).observe(deck,{attributes:true,attributeFilter:['class'],subtree:true});
+
+    window.addEventListener('beforeunload',()=>{
+      if(audienceWin&&!audienceWin.closed)audienceWin.close();
+    });
+  }
+
+  function setupAudienceSync(){
+    if(window.opener)window.opener.postMessage({type:'audience-ready'},'*');
+    window.addEventListener('message',e=>{
+      const d=e.data;
+      if(!d||d.type!=='deck-sync')return;
+      deck.innerHTML=d.html;
+      slides.length=0;
+      slides.push(...document.querySelectorAll('.slide'));
+      cur=Math.max(0,Math.min(d.cur,d.total-1));
+      updateChrome();
+    });
+  }
+
+  if(isPeek){
+    const idx=Math.max(0,Math.min(total-1,parseInt(peekMatch[1],10)-1));
+    show(idx,true);
+  } else {
+    document.addEventListener('keydown',e=>{
+      const navKeys=['ArrowRight','ArrowLeft','Home','End',' ','PageDown','PageUp'];
+      if(mode==='audience'){
+        if(navKeys.includes(e.key)){e.preventDefault();sendKeyToPresenter(e.key,e.ctrlKey||e.metaKey);}
+        else if(e.key==='f'||e.key==='F'){e.preventDefault();toggleFullscreen();}
+        return;
+      }
+      if(backupLock.classList.contains('open')||backupPanel.classList.contains('open')){
+        if(e.key==='Escape'){closeLock();closeBackup();}
+        return;
+      }
+      if(navKeys.includes(e.key)){e.preventDefault();handleKey(e.key,e.ctrlKey||e.metaKey);}
+      else if(e.key==='n'||e.key==='N'){notesPanel.classList.toggle('open');}
+      else if(e.key==='f'||e.key==='F'){toggleFullscreen();}
+      else if(e.key==='b'||e.key==='B'){openLock();}
+      else if(e.key==='?'||e.key==='/'){help.classList.toggle('open');}
+      else if(e.key==='Escape'){help.classList.remove('open');notesPanel.classList.remove('open');}
+    });
+
+    document.getElementById('nextBtn').addEventListener('click',()=>{
+      if(mode==='audience')sendKeyToPresenter('ArrowRight');else next();
+    });
+    document.getElementById('prevBtn').addEventListener('click',()=>{
+      if(mode==='audience')sendKeyToPresenter('ArrowLeft');else prev();
+    });
+    help.addEventListener('click',()=>help.classList.remove('open'));
+
+    if(mode==='presenter'){
+      notesPanel.classList.add('open');
+      setupPresenterSync();
+    } else if(mode==='audience'){
+      setupAudienceSync();
+    }
+    show(0,true);
+  }
+})();
+</script>
+</body>
+</html>
