@@ -1862,7 +1862,8 @@
   const hash=location.hash;
   const peekMatch=hash.match(/^#audience-peek-(\d+)$/);
   const isPeek=!!peekMatch;
-  const isAudience=hash==='#audience'||isPeek;
+  const isPresenter=hash==='#presenter';
+  const isAudience=!isPresenter&&!isPeek;
   const mode=isPeek?'peek':(isAudience?'audience':'presenter');
   document.body.classList.add(isAudience?'mode-audience':'mode-presenter');
   if(isPeek)document.body.classList.add('mode-peek');
