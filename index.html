@@ -26,7 +26,7 @@
   html,body{height:100%;margin:0}
   body{font-family:var(--font);color:var(--ink);background:#0d2420;overflow:hidden;-webkit-font-smoothing:antialiased}
 
-  #deck{position:fixed;inset:0;background:var(--bg);overflow:hidden}
+  #deck{position:fixed;inset:0;background:var(--bg);overflow:hidden;z-index:1}
 
   /* ---------- Slides ---------- */
   .slide{position:absolute;inset:0;display:none;flex-direction:column;justify-content:center;
@@ -49,6 +49,32 @@
   /* ---------- Fragments ---------- */
   .fragment{opacity:0;transform:translateY(12px);transition:opacity .45s ease,transform .45s ease}
   .fragment.vis{opacity:1;transform:none}
+
+  /* ---------- SMT vs THT animation ---------- */
+  .smt-tht-anim{width:100%;height:auto;margin-top:6px}
+  .smt-tht-anim .lbl{font-size:12px;font-weight:700;fill:var(--teal-dark)}
+  .smt-tht-anim .sub{font-size:9.5px;fill:var(--muted)}
+  .smt-chip,.tht-comp{animation:partDrop 1.1s ease-out 1 both;animation-play-state:paused}
+  .tht-comp{animation-name:partDropTht}
+  .fragment.vis .smt-chip,.fragment.vis .tht-comp{animation-play-state:running}
+  @keyframes partDrop{
+    0%{transform:translateY(-34px)}
+    60%{transform:translateY(3px)}
+    80%{transform:translateY(-3px)}
+    100%{transform:translateY(0)}
+  }
+  @keyframes partDropTht{
+    0%{transform:translateY(-40px)}
+    60%{transform:translateY(3px)}
+    80%{transform:translateY(-3px)}
+    100%{transform:translateY(0)}
+  }
+  .smt-glow,.tht-fillet{opacity:0;animation:joinShow .6s ease-in .8s 1 both;animation-play-state:paused}
+  .fragment.vis .smt-glow,.fragment.vis .tht-fillet{animation-play-state:running}
+  @keyframes joinShow{
+    0%{opacity:0}
+    100%{opacity:1}
+  }
 
   /* ---------- Brand corners ---------- */
   .brand{position:fixed;top:26px;z-index:30;background:#fff;border-radius:10px;padding:7px 12px;
@@ -151,6 +177,27 @@
   .barfill{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:999px;transition:width 1.1s cubic-bezier(.16,1,.3,1)}
   .barfill.bad{background:linear-gradient(90deg,#e76b6b,var(--bad))}
   .barfill.warn{background:linear-gradient(90deg,#f0b54a,var(--amber))}
+  .barfill.ok{background:linear-gradient(90deg,#8fd6c4,var(--teal))}
+
+  /* ---------- Formules (slide 3) ---------- */
+  .formula-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+  .formula-card{background:var(--teal-soft);border:1px solid var(--teal-line);border-radius:10px;padding:10px 14px}
+  .formula-card .flabel{font-weight:800;color:var(--teal-dark);text-transform:uppercase;letter-spacing:.04em;font-size:.68rem;margin-bottom:6px}
+  .formula-card .fexpr{font-family:'Cambria Math','Times New Roman',serif;font-size:clamp(.78rem,1.05vw,.95rem);line-height:1.3;color:var(--ink)}
+  .fexpr .frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 5px}
+  .fexpr .frac .fnum{border-bottom:1.4px solid var(--ink);padding:0 4px 2px;white-space:nowrap}
+  .fexpr .frac .fden{padding:2px 4px 0;white-space:nowrap}
+  .fexpr .fvar{color:var(--teal-dark);font-weight:700}
+  .formula-card .fexplain{margin-top:8px;padding-top:8px;border-top:1px solid var(--teal-line);font-size:clamp(.74rem,1vw,.86rem);line-height:1.4;color:var(--ink)}
+
+  /* ---------- Planbord per werkstation (back-up: figuur "Werkstations") ---------- */
+  .planboard{border-radius:var(--radius);overflow:hidden;border:1px solid #e6efed;box-shadow:var(--shadow);background:#fff}
+  .planrow{display:flex;border-bottom:1px solid #e6efed}
+  .planrow:last-child{border-bottom:none}
+  .plan-label{flex:0 0 180px;display:flex;align-items:center;padding:10px 14px;font-weight:700;font-size:.84rem;color:var(--ink);background:#f7faf9;border-right:1px solid #e6efed}
+  .plan-timeline{flex:1;display:flex;flex-direction:column;gap:5px;padding:9px 14px;justify-content:center}
+  .plan-slots{display:flex;gap:6px;height:20px}
+  .plan-block{border:1.5px solid var(--teal);border-radius:4px;background:#fff;flex:none}
   .slide.active .barfill{width:var(--w)}
   .goalline{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--teal-dark);left:10%}
   .goalline::after{content:"doel ≤10%";position:absolute;top:-20px;left:6px;font-size:.7rem;color:var(--teal-dark);font-weight:700;white-space:nowrap}
@@ -167,15 +214,9 @@
   .kluwen .center small{display:block;opacity:.8;font-size:.8rem;margin-top:6px}
   .kpgrid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:clamp(10px,1.4vw,18px)}
   .kpnode{background:#fff;border:2px solid #e6efed;border-left:6px solid var(--teal);border-radius:12px;
-    padding:clamp(10px,1.4vw,18px);cursor:pointer;transition:.25s}
-  .kpnode:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
-  .kpnode.sel{border-color:var(--teal);background:var(--teal-soft);box-shadow:var(--shadow)}
+    padding:clamp(10px,1.4vw,18px);transition:.25s}
   .kpnode .h{font-weight:800;font-size:clamp(.92rem,1.3vw,1.1rem);color:var(--teal-dark)}
   .kpnode .num{font-size:.72rem;font-weight:800;color:var(--teal);letter-spacing:.08em}
-  #kluwenDetail{margin-top:clamp(14px,2vh,22px);background:var(--teal-soft);border:1px solid var(--teal-line);
-    border-radius:12px;padding:14px 18px;font-size:clamp(.9rem,1.3vw,1.1rem);min-height:54px;
-    display:none;align-items:center;color:var(--teal-darker)}
-  #kluwenDetail.vis{display:flex}
 
   /* ---------- KP slides: diagnose -> ontwerp ---------- */
   .flow{display:flex;align-items:center;gap:clamp(10px,1.4vw,20px)}
@@ -195,6 +236,79 @@
   .choice.open .cd{max-height:160px;margin-top:7px}
   .theory{margin-top:12px;font-size:.82rem;color:var(--muted)}
   .theory b{color:var(--teal-dark)}
+  .panel .diaglead{margin:.1em 0 .5em;font-size:clamp(.88rem,1.3vw,1.08rem);line-height:1.42;color:var(--ink)}
+  .panel .diaglead b{color:var(--teal-dark)}
+
+  /* ---------- KP-overzichtsbalk (slides 7-10) ---------- */
+  .kpnav{display:flex;gap:clamp(6px,.8vw,10px);margin:0 0 clamp(12px,2.2vh,22px)}
+  .kpn{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;background:#f1f6f5;
+    border:1px solid #e0eae8;border-radius:10px;padding:7px clamp(8px,1vw,13px);transition:.25s}
+  .kpn .n{font-size:.64rem;font-weight:800;letter-spacing:.08em;color:#9bada9}
+  .kpn .t{font-size:clamp(.72rem,1vw,.92rem);font-weight:700;color:var(--muted);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .kpn.active{background:var(--teal);border-color:var(--teal);box-shadow:var(--shadow)}
+  .kpn.active .n{color:rgba(255,255,255,.85)}
+  .kpn.active .t{color:#fff}
+
+  /* ---------- KP-visuals (slides 7-10: beeld i.p.v. tekst) ---------- */
+  .kpvis{margin:.4em 0 .2em}
+  .kpvis .cap{font-size:clamp(.8rem,1.15vw,1rem);color:var(--muted);line-height:1.35;margin-top:10px}
+  .kpvis .cap b{color:var(--teal-dark)}
+  .bignum-inline{font-size:1.55em;color:var(--teal-dark);font-weight:800}
+  .onderbouwing{margin-top:14px;border-top:1px dashed var(--teal-line);padding-top:10px}
+  .ob-lbl{display:block;font-size:.64rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#9bada9;margin-bottom:7px}
+  .onderbouwing .choice{padding:8px 11px}
+  .onderbouwing .choice .ct{font-size:clamp(.8rem,1.1vw,.95rem)}
+  .onderbouwing .choice .cd{font-size:.82rem}
+  .onderbouwing .choice .bron{display:block;margin-top:5px;font-size:.72rem;font-weight:700;font-style:italic;color:var(--teal-dark)}
+
+  /* ---------- Keyword chips (impact/verlossing, slides 7-10) ---------- */
+  .kwrow{display:flex;flex-wrap:wrap;gap:7px}
+  .kw{display:inline-flex;align-items:center;font-size:clamp(.78rem,1.05vw,.92rem);font-weight:700;
+    padding:6px 13px;border-radius:999px;white-space:nowrap}
+  .kw.bad{background:#fdeaea;color:var(--bad)}
+  .kw.good{background:#e6f6ec;color:var(--good)}
+  .kw.teal{background:var(--teal-soft);color:var(--teal-dark)}
+
+  /* slide 7 — groep verhult vs. 19 stations */
+  .grpblock{border:2px solid var(--bad);border-radius:10px;padding:12px 12px 10px;background:#fdf3f3}
+  .grpbars{display:flex;align-items:flex-end;gap:8px;height:66px}
+  .grpbars span{flex:1;background:var(--teal);opacity:.5;border-radius:4px 4px 0 0}
+  .grpbars span.b1{height:50%}.grpbars span.b2{height:60%}.grpbars span.b4{height:46%}.grpbars span.b5{height:56%}
+  .grpbars span.hot{background:var(--bad);opacity:1;height:100%}
+  .stationgrid{display:grid;grid-template-columns:repeat(10,1fr);gap:5px}
+  .stationgrid i{aspect-ratio:1;border-radius:4px;background:var(--teal-soft);border:1px solid var(--teal-line)}
+  .stationgrid i.hot{background:var(--bad);border-color:var(--bad);box-shadow:0 0 0 3px rgba(214,69,69,.2)}
+
+  /* slide 8 — capaciteit ijken + buffer */
+  .capbar{display:flex;align-items:center;gap:10px;margin-bottom:13px}
+  .capbar .nm{flex:0 0 40px;font-weight:800;font-size:.82rem;color:var(--ink)}
+  .captrack{position:relative;flex:1;height:24px;background:#eef2f1;border-radius:6px}
+  .capfill{position:absolute;left:0;top:0;bottom:0;border-radius:6px}
+  .capfill.under{background:linear-gradient(90deg,#f4cf86,var(--amber))}
+  .capfill.over{background:linear-gradient(90deg,#e76b6b,var(--bad))}
+  .capfill.ok{background:linear-gradient(90deg,#8fd6c4,var(--teal))}
+  .capmark{position:absolute;top:-5px;bottom:-5px;width:2px;background:var(--ink);border-radius:2px}
+  .capmark::after{content:attr(data-l);position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-size:.6rem;font-weight:800;color:var(--ink);white-space:nowrap}
+  .capmark.buf{background:var(--teal-dark)}
+  .capmark.buf::after{color:var(--teal-dark)}
+
+  /* slide 9 — schijncapaciteit (piek) vs. gespreid */
+  .tl{position:relative;display:flex;align-items:flex-end;gap:4px;height:62px;border-bottom:2px solid var(--teal-line)}
+  .tl span{flex:1;border-radius:3px 3px 0 0}
+  .tl.before span{height:9%;background:var(--teal);opacity:.45}
+  .tl.before span.spike{height:100%;background:var(--bad);opacity:1}
+  .tl.after span{height:40%;background:var(--teal);opacity:.85}
+  .tlx{display:flex;justify-content:space-between;font-size:.64rem;color:#9bada9;margin-top:5px}
+
+  /* slide 10 — gebroken kanaal + closed loop */
+  .chan{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+  .chanbox{flex:1;text-align:center;background:#fff;border:2px solid var(--teal-line);border-radius:10px;padding:11px 6px;font-weight:800;font-size:.82rem;color:var(--teal-dark)}
+  .chanline{flex:0 0 26px;border-top:3px dashed var(--bad)}
+  .chanbreak{flex:0 0 auto;color:var(--bad);font-weight:800;font-size:1.3rem;line-height:1}
+  .loop{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap}
+  .loopnode{background:var(--teal-soft);border:1px solid var(--teal-line);border-radius:10px;padding:9px 13px;font-weight:700;font-size:.8rem;color:var(--teal-dark);text-align:center}
+  .looparr{color:var(--teal);font-weight:800;font-size:1.1rem}
 
   /* ---------- Synthese (slide 11) ---------- */
   .syn{display:flex;align-items:stretch;gap:10px;flex-wrap:nowrap}
@@ -220,6 +334,25 @@
   .kn .el{font-size:clamp(1rem,1.5vw,1.25rem);font-weight:800;margin:4px 0}
   .kn .ex{font-size:clamp(.78rem,1.1vw,.92rem);color:var(--muted);line-height:1.3}
   .kn .risktag{display:inline-block;margin-top:8px;font-size:.66rem;font-weight:800;color:var(--bad);background:#fdeaea;border-radius:999px;padding:2px 8px}
+
+  /* ---------- Implementatie-tijdlijn (back-up, KP-overstijgend) ---------- */
+  .implgantt{background:#fff;border-radius:var(--radius);padding:clamp(14px,1.8vw,22px);border:1px solid #e6efed}
+  .implgantt .iaxis{display:flex;justify-content:space-between;font-size:.66rem;font-weight:700;color:#9bada9;
+    margin:0 0 8px;padding-left:152px;letter-spacing:.04em}
+  .implrows{display:flex;flex-direction:column;gap:10px}
+  .implrow{display:flex;align-items:center;gap:10px}
+  .implrow .irlabel{flex:0 0 142px;font-weight:800;font-size:.78rem;color:var(--ink);line-height:1.3}
+  .implrow .irlabel small{display:block;font-weight:700;color:var(--muted);font-size:.86em;margin-top:1px}
+  .implrow .irtrack{position:relative;flex:1;height:30px;background:#f1f6f5;border-radius:8px}
+  .irbar{position:absolute;top:3px;bottom:3px;border-radius:6px;display:flex;align-items:center;
+    padding:0 9px;font-size:.66rem;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden}
+  .irbar.f0{background:#9bada9}
+  .irbar.f1{background:var(--magenta)}
+  .irbar.f2{background:var(--teal-dark)}
+  .irbar.f3{background:var(--teal)}
+  .irbar.f3b{background:var(--teal-darker);opacity:.55}
+  .irbar.f4{background:#3aa99a}
+  .irbar.f4b{background:var(--teal-darker);opacity:.55}
 
   /* ---------- Roadmap (slide 13) ---------- */
   .road{display:flex;flex-direction:column;gap:6px}
@@ -284,12 +417,61 @@
   .lockcard button:hover{background:var(--teal-dark)}
 
   #backupPanel .bp-frame{background:#fff;border-radius:18px;box-shadow:var(--shadow);
-    width:min(1100px,94vw);height:min(760px,92vh);display:flex;flex-direction:column;overflow:hidden}
+    width:98vw;height:97vh;display:flex;flex-direction:column;overflow:hidden}
+
+  body:has(#backupPanel.open) #bottombar,
+  body:has(#backupPanel.open) .brand,
+  body:has(#backupPanel.open) #deck>button {
+    pointer-events: none;
+  }
+
+  /* ---------- Knoster matrix & dashboard ---------- */
+  .knoster-container{font-family:var(--font);background:#ffffff;padding:0}
+  .knoster-matrix{display:flex;flex-direction:column;gap:14px;margin-bottom:40px}
+  .matrix-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .blocks{display:flex;gap:10px;flex:1}
+  .block{flex:1;height:38px;display:flex;align-items:center;justify-content:center;border-radius:6px;
+    font-size:14px;font-weight:600;color:#2c3e50;box-shadow:inset 0 -2px 0 rgba(0,0,0,0.1)}
+  .block.visie{background-color:#e2f5e9;color:#27ae60;border:1px solid #c2e9d1}
+  .block.belang{background-color:#e3f2fd;color:#1e88e5;border:1px solid #bbdefb}
+  .block.plan{background-color:#fffde7;color:#fbc02d;border:1px solid #fff9c4}
+  .block.middelen{background-color:#fbe9e7;color:#f4511e;border:1px solid #ffccbc}
+  .block.competenties{background-color:#f5f5f5;color:#757575;border:1px solid #e0e0e0}
+  .block.empty{background:transparent;border:none;box-shadow:none}
+  .gap-container{flex:1;display:flex;gap:4px;align-items:center;justify-content:center;
+    background:#fdfefe;border:2px dashed #bdc3c7;border-radius:6px;height:34px}
+  .kp-badge{background:#34495e;color:white;font-size:11px;padding:3px 6px;border-radius:4px;font-weight:bold}
+  .kp-badge.alert{background:#c0392b}
+  .arrow{width:50px;text-align:center;color:#7f8c8d;font-size:18px}
+  .outcome{width:140px;height:38px;display:flex;align-items:center;justify-content:center;border:1px solid #bdc3c7;
+    border-radius:20px;font-size:14px;color:#34495e;font-weight:500}
+  .outcome.succes{background:#27ae60;color:white;border-color:#27ae60;font-weight:bold}
+  .separator{border:0;height:1px;background:#eaeded;margin:40px 0}
+  .kp-grid{display:flex;gap:16px}
+  .bp-sec .kp-card{background:#ffffff;border-radius:12px;border-top:4px solid #cfd8dc;padding:18px;flex:1;
+    box-shadow:0 4px 12px rgba(0,0,0,0.03);border:1px solid #eaeded;display:flex;flex-direction:column}
+  .kp-card.highlight-green{border-top:4px solid #27ae60;box-shadow:0 4px 16px rgba(39,174,96,0.1)}
+  .kp-card .kp-header{color:#16a085;font-size:12px;font-weight:bold;margin-bottom:6px}
+  .kp-card .kp-title{font-size:18px;font-weight:700;color:#2c3e50;margin-bottom:10px}
+  .kp-card .kp-text{font-size:13px;color:#7f8c8d;line-height:1.4;margin-bottom:14px;flex-grow:1}
+  .badge-row{margin-top:auto}
+  .badge{display:inline-block;padding:3px 8px;border-radius:12px;font-size:11px;font-weight:bold}
+  .badge.red{background:#fdf2f2;color:#ec7063}
+  .badge.red-dark{background:#fadbd8;color:#cd6155}
   .bp-head{display:flex;align-items:center;justify-content:space-between;padding:16px 26px;
     border-bottom:1px solid var(--teal-line);flex:none}
   .bp-head .eyebrow{margin:0}
   .bp-close{background:none;border:none;font-size:1.4rem;color:var(--muted);cursor:pointer;line-height:1;padding:4px 8px}
   .bp-close:hover{color:var(--ink)}
+  .bp-share{background:var(--teal);color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:.82rem;font-weight:700;cursor:pointer;margin-right:14px;transition:background .2s;white-space:nowrap}
+  .bp-share:hover{background:var(--teal-dark)}
+  .bp-share.live{background:var(--good)}
+
+  /* ---------- Publieksscherm: losse afbeelding-overlay (geen back-up-chrome) ---------- */
+  #audienceFig{position:fixed;inset:0;z-index:95;background:#fff;display:none;
+    align-items:center;justify-content:center;padding:clamp(24px,5vw,80px)}
+  #audienceFig.open{display:flex}
+  #audienceFig .fig-inner{width:100%;max-width:1100px}
   .bp-tabs{display:flex;gap:6px;padding:12px 26px;flex-wrap:wrap;border-bottom:1px solid #eef2f1;flex:none}
   .bp-tab{background:#eef2f1;border:none;border-radius:999px;padding:7px 16px;font-size:.82rem;font-weight:700;
     color:var(--muted);cursor:pointer;transition:.2s}
@@ -364,10 +546,11 @@
 
   /* ---------- De Caluwé kleurenmodel ---------- */
   .caluwerow{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
-  .caluwe{flex:1;min-width:150px;border-radius:14px;padding:14px 16px;color:#fff;position:relative}
+  .caluwe{flex:1;min-width:150px;border-radius:14px;padding:14px 16px;color:#fff;position:relative;transition:opacity .35s ease,transform .35s ease,filter .35s ease,box-shadow .35s ease}
   .caluwe .cn{font-weight:800;font-size:.92rem;margin-bottom:4px}
   .caluwe .cd{font-size:.78rem;opacity:.95;line-height:1.3}
-  .caluwe.dom{outline:3px solid var(--teal-dark);outline-offset:3px}
+  .caluwe.dom.hi{outline:3px solid var(--teal-dark);outline-offset:3px;transform:scale(1.05);box-shadow:0 8px 22px rgba(21,83,73,.28);z-index:1}
+  .caluwerow.dom-on .caluwe:not(.dom){opacity:.5;filter:saturate(.6)}
   .caluwe.geel{background:#b3920a}
   .caluwe.blauw{background:#1d5fa0}
   .caluwe.rood{background:#b5354a}
@@ -416,6 +599,23 @@
   body.mode-audience #notes,
   body.mode-audience .notes-hint,
   body.mode-audience #help{display:none!important}
+  body.mode-audience .locktip{display:none!important}
+
+  /* ---------- Publieksscherm: schermformaat (Monitor / TV) ---------- */
+  /* Basis (altijd in publieksmodus): centreer de dia als hij past, maar lijn naar
+     boven uit zodra hij niet past. Zo blijft de titel altijd onder de logo's, ook op
+     een breed-en-laag tv-scherm. */
+  body.mode-audience .slide:not(.cover-slide){
+    justify-content:safe center;
+    padding-top:max(clamp(28px,5vw,90px),84px);
+  }
+  /* TV / breedbeeld: inhoud bovenaan uitlijnen met vaste vrije ruimte boven de logo's. */
+  body.mode-audience.screen-tv .slide:not(.cover-slide){
+    justify-content:flex-start;
+    padding-top:clamp(86px,11vh,108px);
+    padding-bottom:clamp(22px,3.5vh,40px);
+  }
+
   body.mode-peek #bottombar,
   body.mode-peek #progress,
   body.mode-peek .nav,
@@ -447,15 +647,14 @@
       <div class="it"><span>Eerste beoordelaar</span><b>Marco Rijkeboer</b></div>
       <div class="it"><span>Tweede beoordelaar</span><b>Andries van Stralen</b></div>
     </div>
-    <div class="cover-hint">Navigeer met <kbd>→</kbd><kbd>spatie</kbd> · vorige <kbd>←</kbd> · spreeknotities <kbd>N</kbd> · hulp <kbd>?</kbd></div>
-    <aside class="notes" hidden><p class="n-open">Contecto groeide zo hard dat het de grip op haar eigen productie verloor. Vandaag laat ik zien hoe het die grip terugpakt.</p>
+    <aside class="notes" hidden><p class="n-open">Contecto groeide zo hard dat het de grip op zijn eigen productie verloor. Vandaag laat ik zien hoe het die grip terugpakt.</p>
       <ul class="n-bullets">
-        <li>Contecto in Beugen, afstudeeronderzoek Technische Bedrijfskunde</li>
-        <li>Route: probleem, diagnose, ontwerp, verandering</li>
+        <li>Afstudeeronderzoek Technische Bedrijfskunde</li>
+        <li>Mededeling: doelgroep, opzet, vragen na afloop</li>
+        <li>Dank aan Contecto in Beugen voor de begeleiding</li>
         <li>Tijd: ca. <b>15 minuten</b></li>
-        <li>Evaluatiefase bewust buiten scope</li>
       </ul>
-      <p class="n-bridge">Bruggetje: ik begin bij de aanleiding, een bedrijf dat sneller groeide dan zijn planning.</p>
+      <p class="n-bridge">"eerst kort wie Contecto is en waardoor de druk op de planning ontstond."</p>
     </aside>
   </section>
 
@@ -467,31 +666,52 @@
     <div class="cols">
       <div class="col">
         <ul class="clean">
-          <li class="fragment">Contecto - PCBA's op <b>SMT</b> &amp; <b>THT</b>, gepland in <b>Ridder iQ</b></li>
+          <li class="fragment"data-group="1">Contecto - PCBA's op <b>SMT</b> &amp; <b>THT</b>, gepland in <b>Ridder iQ</b></li>
           <li class="fragment">Orderstroom sinds 2019: <b style="font-size:1.35em;color:var(--bad)">×4</b></li>
-          <li class="fragment"data-group="1">Greiner (1972) - <b>controlecrisis</b>: regie kwijt</li>
         </ul>
       </div>
       <div class="col fragment"data-group="1">
         <div class="card">
-          <h3 style="color:var(--teal-dark)">Groeifasen - Greiner (1972)</h3>
-          <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
-            <div style="display:flex;gap:12px;align-items:center"><span style="flex:0 0 64px;font-weight:800;color:var(--muted)">2002</span><span>Creativiteit - pionier in mechatronica</span></div>
-            <div style="display:flex;gap:12px;align-items:center"><span style="flex:0 0 64px;font-weight:800;color:var(--muted)">→</span><span>Sturing - invoering ERP Ridder iQ</span></div>
-            <div style="display:flex;gap:12px;align-items:center"><span style="flex:0 0 64px;font-weight:800;color:var(--muted)">2019</span><span>Delegatie - planning naar de werkvloer</span></div>
-            <div style="display:flex;gap:12px;align-items:center;background:#fdeaea;border-radius:10px;padding:10px 12px"><span style="flex:0 0 64px;font-weight:800;color:var(--bad)">nu</span><b style="color:var(--bad)">Controlecrisis: regie kwijt</b></div>
-          </div>
+          <svg class="smt-tht-anim" viewBox="0 0 460 195" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Animatie van SMT- en THT-componentmontage">
+            <text x="15" y="20" class="lbl">SMT - Surface Mount Technology</text>
+            <rect x="15" y="138" width="180" height="16" rx="3" fill="var(--teal-soft)" stroke="var(--teal-line)"/>
+            <rect x="70" y="134" width="16" height="6" fill="var(--teal)"/>
+            <rect x="114" y="134" width="16" height="6" fill="var(--teal)"/>
+            <circle class="smt-glow" cx="78" cy="137" r="9" fill="var(--good)"/>
+            <circle class="smt-glow" cx="122" cy="137" r="9" fill="var(--good)"/>
+            <g class="smt-chip">
+              <path d="M70,132 q-5,5 0,9" stroke="var(--ink)" stroke-width="3" fill="none"/>
+              <path d="M130,132 q5,5 0,9" stroke="var(--ink)" stroke-width="3" fill="none"/>
+              <rect x="62" y="106" width="76" height="26" rx="4" fill="var(--teal-darker)"/>
+              <rect x="62" y="106" width="76" height="6" rx="3" fill="#2c8a78"/>
+            </g>
+            <text x="15" y="174" class="sub">Direct op het oppervlak gesoldeerd</text>
+            <g transform="translate(230,0)">
+              <text x="15" y="20" class="lbl">THT - Through-Hole Technology</text>
+              <rect x="15" y="138" width="180" height="16" rx="3" fill="var(--teal-soft)" stroke="var(--teal-line)"/>
+              <g class="tht-comp">
+                <line x1="75" y1="106" x2="75" y2="162" stroke="var(--ink)" stroke-width="3"/>
+                <line x1="125" y1="106" x2="125" y2="162" stroke="var(--ink)" stroke-width="3"/>
+                <rect x="68" y="92" width="64" height="20" rx="10" fill="var(--magenta)"/>
+              </g>
+              <circle cx="75" cy="146" r="4.5" fill="#fff" stroke="var(--teal-dark)" stroke-width="1.5"/>
+              <circle cx="125" cy="146" r="4.5" fill="#fff" stroke="var(--teal-dark)" stroke-width="1.5"/>
+              <path class="tht-fillet" d="M68,156 q7,11 14,0 z" fill="var(--amber)"/>
+              <path class="tht-fillet" d="M118,156 q7,11 14,0 z" fill="var(--amber)"/>
+              <text x="15" y="170" class="sub"><tspan x="15" dy="0">Pootjes door gaten,</tspan><tspan x="15" dy="11">onderaan gesoldeerd</tspan></text>
+            </g>
+          </svg>
         </div>
       </div>
     </div>
-    <aside class="notes" hidden><p class="n-open">Contecto plant printplaten op twee afdelingen in het ERP-systeem Ridder iQ.</p>
+    <aside class="notes" hidden><p class="n-open">Contecto's kerntaak is het assembleren van printplaten, oftewel PCBA's.</p>
       <ul class="n-bullets">
-        <li>SMT en THT, planning loopt via <b>Ridder iQ</b></li>
-        <li>Orderstroom sinds 2019: <b>×4</b></li>
-        <li>Greiner (1972): controlecrisis, regie kwijt</li>
-        <li>Teamleads schuiven orders handmatig om het systeem heen</li>
+        <li>SMT en THT in scope, mechanica buiten scope</li>
+        <li>Verschil kort: SMT op oppervlak, THT door gaten (niet uitweiden)</li>
+        <li>Planning draait in <b>Ridder iQ</b></li>
+        <li>Sinds 2019 orderstroom <b>×4</b> → hier ontstaat de druk</li>
       </ul>
-      <p class="n-bridge">Bruggetje: die controlecrisis is direct terug te zien in de cijfers.</p>
+      <p class="n-bridge">"die verviervoudiging is direct terug te zien in de cijfers."</p>
     </aside>
   </section>
 
@@ -499,38 +719,48 @@
   <section class="slide" data-phase="P">
     <span class="eyebrow">Probleemidentificatie</span>
     <h2>Het probleem in cijfers</h2>
-    <p class="sub">Nulmeting over kalenderjaar 2025. Klik op een balk voor de toelichting.</p>
+    <p class="sub">Nulmeting over kalenderjaar 2025.</p>
+    <div class="formula-row">
+      <div class="formula-card">
+        <div class="flabel">WMAPE (%)</div>
+        <div class="fexpr">WMAPE&nbsp;=&nbsp;<span class="frac"><span class="fnum">Σ |<span class="fvar">Gerealiseerd</span> &minus; <span class="fvar">Gepland</span>|</span><span class="fden">Σ <span class="fvar">Gerealiseerd</span></span></span></div>
+        <div class="fexplain"><b style="color:var(--teal-dark)">WMAPE</b> · afwijking gepland vs. werkelijk per dag</div>
+      </div>
+      <div class="formula-card">
+        <div class="flabel">Schedule Adherence (%)</div>
+        <div class="fexpr">SA&nbsp;=&nbsp;<span class="frac"><span class="fnum">aantal(<span class="fvar">WerkelijkeEind</span> ≤ <span class="fvar">GeplandeEindBewerking</span>)</span><span class="fden">aantal(alle bewerkingen)</span></span></div>
+        <div class="fexplain"><b style="color:var(--teal-dark)">Schedule Adherence</b> · aandeel bewerkingen op tijd gereed</div>
+      </div>
+    </div>
     <div class="bars">
       <div class="barrow fragment" data-bar>
         <div class="top"><span class="name">WMAPE - THT</span><span class="val" style="color:var(--bad)">51%</span></div>
         <div class="track"><div class="barfill bad" style="--w:51%"></div><div class="goalline"></div></div>
-        <div class="bardetail">Geplande uren wijken op dagniveau ver af van de realisatie. Norm: maximaal 10%.</div>
+        <div class="bardetail">Norm: max. 10%</div>
       </div>
       <div class="barrow fragment" data-bar>
         <div class="top"><span class="name">WMAPE - SMT</span><span class="val" style="color:var(--bad)">64%</span></div>
         <div class="track"><div class="barfill bad" style="--w:64%"></div><div class="goalline"></div></div>
-        <div class="bardetail">Grootste afwijking: bijna twee derde van de dagplanning klopt niet.</div>
+        <div class="bardetail">Grootste afwijking</div>
       </div>
       <div class="barrow fragment" data-bar>
         <div class="top"><span class="name">Schedule Adherence</span><span class="val" style="color:var(--amber)">29,53%</span></div>
         <div class="track"><div class="barfill warn" style="--w:29.53%"></div><div class="goalline sa"></div></div>
-        <div class="bardetail">Slechts 29,53% komt op of vóór de geplande datum gereed. Doel: minimaal 85%.</div>
+        <div class="bardetail">Doel: min. 85%</div>
       </div>
     </div>
     <div class="card fragment" style="margin-top:22px;border-left:6px solid var(--bad)">
       <span class="tag diag">Handelingsprobleem</span>
-      <p style="margin:0;font-size:clamp(.92rem,1.35vw,1.12rem)">Grove inschattingen en schijncapaciteit leiden tot een onacceptabel hoge WMAPE, terwijl voor grip op de verviervoudigde orderstroom maximaal 10% nodig is.</p>
+      <p style="margin:0;font-size:clamp(.92rem,1.35vw,1.12rem)">“De huidige wijze van plannen op basis van grove inschattingen en de aanwezigheid van schijncapaciteit door afroeporders leiden tot een onacceptabel hoge WMAPE-waarde van momenteel 51% (THT) en 64% (SMT) op de productieplanning, terwijl voor een gezonde bedrijfsvoering en grip op de verviervoudigde orderstroom een WMAPE van maximaal 10% vereist is om de leverbetrouwbaarheid en efficiëntie te waarborgen.”</p>
     </div>
     <div class="src">Bron: Ridder iQ via Power BI (kalenderjaar 2025)</div>
-    <aside class="notes" hidden><p class="n-open">De ernst van de crisis blijkt uit de nulmeting over 2025.</p>
+    <aside class="notes" hidden><p class="n-open">De ernst blijkt uit de nulmeting over 2025.</p>
       <ul class="n-bullets">
-        <li>WMAPE THT: <b>51%</b>, norm maximaal 10%</li>
-        <li>WMAPE SMT: <b>64%</b>, grootste afwijking</li>
-        <li>Schedule Adherence: <b>29,53%</b>, doel ≥85%</li>
-        <li>Bron: Ridder iQ via Power BI, kalenderjaar 2025</li>
+        <li>Formules kort: WMAPE = afwijking gepland vs. werkelijk · Schedule Adherence = aandeel op tijd gereed</li>
+        <li>Wijs op de rode balken: ver boven de norm van 10%</li>
+        <li>Bron: <b>Ridder iQ via Power BI</b>, kalenderjaar 2025</li>
       </ul>
-      <p class="n-bridge">Bruggetje: deze cijfers leiden direct naar de hoofdvraag.</p>
-      <p class="n-backup">Als ze vragen naar de berekening van WMAPE → zie back-up rekenmethode.</p>
+      <p class="n-bridge">"deze cijfers leiden direct naar de hoofdvraag."</p>
     </aside>
   </section>
 
@@ -557,61 +787,54 @@
         <span class="badge" style="background:#f4f6f5;color:#aab8b5;text-decoration:line-through">E · Evaluatie buiten scope</span>
       </div>
     </div>
-    <aside class="notes" hidden><p class="n-open">Dat leidt tot de hoofdvraag: kan Contecto de planning herontwerpen richting een WMAPE van maximaal 10%.</p>
+    <aside class="notes" hidden><p class="n-open">De hoofdvraag, met de bijbehorende doelstelling en afbakening.</p>
       <ul class="n-bullets">
-        <li>Hoofdvraag: WMAPE <b>≤10%</b> vóór 1 juli 2026</li>
-        <li>Schedule Adherence <b>≥85%</b>: gedragsmatige randvoorwaarde</li>
-        <li>Normen vastgesteld in overleg met de Operations Manager (literatuur geeft geen eenduidige waarde)</li>
-        <li>PDOVE: P, D, O binnen scope; V als implementatieadvies; E buiten scope</li>
+        <li>Hoofdvraag in eigen woorden, niet voorlezen</li>
+        <li>Normen komen uit <b>overleg met de Operations Manager</b>, geen literatuurnorm (vaak gevraagd)</li>
+        <li>PDOVE: P, D, O binnen scope · V = implementatieadvies · E buiten scope</li>
       </ul>
-      <p class="n-bridge">Bruggetje: om deze hoofdvraag te beantwoorden, leg ik eerst het theoretisch kader uit.</p>
+      <p class="n-bridge">"om die hoofdvraag te beantwoorden, leg ik eerst uit hoe ik tot mijn bevindingen ben gekomen."</p>
     </aside>
   </section>
 
-  <!-- ===== Slide 5 - THEORETISCH KADER: THEORIE / MODEL / METHODE (D) ===== -->
+  <!-- ===== Slide 5 - METHODE & VALIDITEIT (D) ===== -->
   <section class="slide" data-phase="D">
-    <span class="eyebrow">Diagnose - theoretisch kader</span>
-    <h2>Theoretisch kader: theorie, model en methode</h2>
-    <p class="sub">Kernselectie uit 29 onderliggende bronnen.</p>
+    <span class="eyebrow">Diagnose - methode &amp; validiteit</span>
+    <h2>Hoe zijn de bevindingen tot stand gekomen</h2>
+    <p class="sub">Praktijkgericht onderzoek, getrianguleerd over drie bronnen. De theorie is verweven in de diagnose en het ontwerp.</p>
     <div class="grid3">
       <div class="card fragment">
-        <span class="tag teal">Theorie</span>
-        <h3>Waarom planning faalt</h3>
+        <span class="tag teal">Kwantitatief</span>
+        <h3>Ridder iQ via Power BI</h3>
         <ul class="clean" style="gap:10px">
-          <li style="font-size:.92rem"><b>Greiner (1972):</b> controlecrisis door gedecentraliseerde planning.</li>
-          <li style="font-size:.92rem"><b>Galbraith (1974):</b> informatieverwerking tekort bij groeiende variatie.</li>
-          <li style="font-size:.92rem"><b>Hax &amp; Meal (1975); Pinedo (2008):</b> aggregatie verhult knelpunten op werkstationniveau.</li>
+          <li style="font-size:.92rem">Productiedata <b>2025</b></li>
+          <li style="font-size:.92rem">WMAPE (dag) · Schedule Adherence (bewerking)</li>
         </ul>
       </div>
       <div class="card fragment">
-        <span class="tag teal">Model</span>
-        <h3>Capaciteit &amp; meting</h3>
+        <span class="tag teal">Kwalitatief</span>
+        <h3>Werkvloer &amp; interviews</h3>
         <ul class="clean" style="gap:10px">
-          <li style="font-size:.92rem"><b>Altendorfer et al. (2016):</b> geplande utilisatie / Capacity Cushion.</li>
-          <li style="font-size:.92rem"><b>Nakajima (1988):</b> OEE-verliesindeling.</li>
-          <li style="font-size:.92rem"><b>Wight (1984); Hirano (1995):</b> closed-loop MRP en visueel management.</li>
+          <li style="font-size:.92rem">Interviews: Operations, Productie, Sales Manager</li>
+          <li style="font-size:.92rem"><b>Gemba walk</b> 18 mei 2026 · meewerken SMT/THT</li>
         </ul>
       </div>
       <div class="card fragment">
-        <span class="tag teal">Methode</span>
-        <h3>Praktijkgericht onderzoek</h3>
+        <span class="tag teal">Validatie</span>
+        <h3>Triangulatie &amp; expert-toets</h3>
         <ul class="clean" style="gap:10px">
-          <li style="font-size:.92rem">Data 2025 <b>Ridder iQ/Power BI</b>, interviews stakeholders, meewerken productievloer en Gemba walk.</li>
-          <li style="font-size:.92rem">Expert-validatie van de planningslogica door de Productie Manager en Operations Manager.</li>
+          <li style="font-size:.92rem">Triangulatie: data, interviews, observatie</li>
+          <li style="font-size:.92rem"><b>Expert-validatie</b>: Productie &amp; Operations Manager</li>
         </ul>
       </div>
     </div>
-    <div class="src">Betrouwbaarheid en validiteit zijn geborgd via triangulatie van Ridder iQ/Power BI-data, interviews en Gemba walk, getoetst in expert-validatie met de Productie Manager en Operations Manager.</div>
-    <aside class="notes" hidden><p class="n-open">Het theoretisch kader bestaat uit drie lagen: theorie, model en methode.</p>
+    <div class="src">Bron: Ridder iQ/Power BI-data, interviews en Gemba walk, getoetst via expert-validatie met de Productie Manager en Operations Manager.</div>
+    <aside class="notes" hidden><p class="n-open">Het onderzoek is praktijkgericht en steunt op drie bronnen.</p>
       <ul class="n-bullets">
-        <li>Theorie: Greiner, Galbraith, Hax &amp; Meal/Pinedo, waarom planning faalt</li>
-        <li>Model: Altendorfer Capacity Cushion, Nakajima OEE, visueel management</li>
-        <li>Methode: data Ridder iQ/Power BI, interviews, Gemba walk</li>
-        <li>Expert-validatie door Productie Manager en Operations Manager</li>
-        <li><b>15 bronnen</b> in totaal, volledige tabel in back-up</li>
+        <li>Getrianguleerd: <b>Power BI-data, interviews, Gemba walk</b> · getoetst bij Productie en Operations Manager</li>
+        <li>Theorie verweven in diagnose en ontwerp; <b>30 bronnen</b>, tabel in back-up</li>
       </ul>
-      <p class="n-bridge">Bruggetje: met dit kader kan ik de probleemkluwen ontrafelen.</p>
-      <p class="n-backup">Als ze vragen naar de volledige bronnentabel → zie back-up theoretisch kader.</p>
+      <p class="n-bridge">"met deze methode kan ik de probleemkluwen onderbouwd ontrafelen."</p>
     </aside>
   </section>
 
@@ -619,267 +842,271 @@
   <section class="slide" data-phase="D">
     <span class="eyebrow">Diagnose</span>
     <h2>Eén handelingsprobleem, vier kernproblemen</h2>
+    <p class="sub">Kort overzicht; hierna verdieping per kernprobleem.</p>
     <div class="kluwen fragment">
       <div class="center">
         <div class="big">↑ WMAPE</div>
         <small>Gebrek aan regie op de orderstroom</small>
       </div>
       <div class="kpgrid">
-        <div class="kpnode" data-kp="1"><span class="num">KP 1</span><div class="h">Te grof groepsniveau</div></div>
-        <div class="kpnode" data-kp="2"><span class="num">KP 2</span><div class="h">Capaciteit verkeerd ingesteld</div></div>
-        <div class="kpnode" data-kp="3"><span class="num">KP 3</span><div class="h">Foutieve afroeporders</div></div>
-        <div class="kpnode" data-kp="4"><span class="num">KP 4</span><div class="h">Geen visuele prioriteit</div></div>
+        <div class="kpnode"><span class="num">KP 1</span><div class="h">Te grof groepsniveau</div></div>
+        <div class="kpnode"><span class="num">KP 2</span><div class="h">Capaciteit verkeerd ingesteld</div></div>
+        <div class="kpnode"><span class="num">KP 3</span><div class="h">Foutieve afroeporders</div></div>
+        <div class="kpnode"><span class="num">KP 4</span><div class="h">Geen visuele prioriteit</div></div>
       </div>
     </div>
-    <div id="kluwenDetail">Meer informatie over het kernprobleem...</div>
     <aside class="notes" hidden><p class="n-open">De hoge WMAPE komt voort uit vier samenhangende kernproblemen.</p>
       <ul class="n-bullets">
-        <li>KP1: te grof groepsniveau</li>
-        <li>KP2: capaciteit verkeerd ingesteld</li>
-        <li>KP3: foutieve afroeporders</li>
-        <li>KP4: geen visuele prioriteit</li>
+        <li>Geen vier losse problemen, maar één kluwen rond regie op de orderstroom</li>
+        <li>Volgorde is bewust: elk probleem maakt het volgende mogelijk</li>
+        <li>Balk bovenaan toont waar we zijn</li>
       </ul>
-      <p class="n-bridge">Bruggetje: ik behandel ze één voor één, eerst de diagnose dan het ontwerp.</p>
+      <p class="n-bridge">"ik loop ze één voor één langs en laat per kernprobleem het probleem, het ontwerp en het effect zien."</p>
     </aside>
   </section>
 
   <!-- ===== Slide 7 - KP1 (O) ===== -->
-  <section class="slide" data-phase="O">
+  <section class="slide" data-phase="O" data-kp="1">
+    <div class="kpnav"></div>
     <span class="eyebrow">Ontwerp - Kernprobleem 1</span>
     <h2>Planning op te grof niveau</h2>
-    <div class="accentbar"></div>
     <div class="flow">
       <div class="panel now fragment">
         <span class="tag diag">Diagnose</span>
-        <ul>
-          <li>Gepland op <b>bewerkingsgroepniveau</b>, niet werkstation</li>
-          <li>Afwijkingen heffen elkaar op; knelpunt onzichtbaar</li>
-        </ul>
+        <p class="diaglead">Gepland op <b>bewerkingsgroep</b></p>
+        <div class="kpvis">
+          <div class="grpblock">
+            <div class="grpbars"><span class="b1"></span><span class="b2"></span><span class="hot"></span><span class="b4"></span><span class="b5"></span></div>
+          </div>
+          <div class="cap">Groep oogt gezond</div>
+        </div>
+        <div class="onderbouwing">
+          <span class="ob-lbl">Impact</span>
+          <div class="kwrow"><span class="kw bad">Knelpunt onzichtbaar</span><span class="kw bad">Datum onhaalbaar</span><span class="kw bad">Klant teleurgesteld</span></div>
+        </div>
       </div>
       <div class="arrow fragment" data-group="1">→</div>
       <div class="panel fragment" data-group="1">
         <span class="tag des">Ontwerp</span>
-        <p style="margin:.2em 0 .6em;font-weight:700">Disaggregatie naar <b style="font-size:1.2em">19</b> werkstations</p>
-        <div class="choices">
-          <div class="choice" data-exp><div class="ct"><span>SMT Lijn 1 &amp; 2 apart</span></div><div class="cd"><span class="score" style="display:inline-block;margin-bottom:5px">4,60</span><br>Lijngebonden; knelpunt zichtbaar (vs. 1,80 samenvoegen)</div></div>
-          <div class="choice" data-exp><div class="ct"><span>4 THT-stations samengevoegd</span></div><div class="cd"><span class="score" style="display:inline-block;margin-bottom:5px">5,00</span><br>Identiek; apart registreren = alleen extra last (vs. 1,80)</div></div>
-          <div class="choice" data-exp><div class="ct"><span>Reflow + Vapor gecombineerd</span></div><div class="cd"><span class="score" style="display:inline-block;margin-bottom:5px">4,60</span><br>Stuklijstattribuut bepaalt machine; één groep volstaat</div></div>
+        <p class="diaglead">Plannen per <b class="bignum-inline">19</b> werkstations</p>
+        <div class="kpvis">
+          <div class="stationgrid"><i></i><i></i><i></i><i></i><i class="hot"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="cap">Per station</div>
         </div>
-        <div class="theory">Hiërarchische productieplanning (Hax &amp; Meal, 1975).</div>
+        <div class="onderbouwing">
+          <span class="ob-lbl">Verlossing</span>
+          <div class="kwrow"><span class="kw good">Knelpunt zichtbaar</span><span class="kw good">Datum haalbaar</span><span class="kw good">Belofte houdbaar</span></div>
+        </div>
       </div>
     </div>
     <aside class="notes" hidden><p class="n-open">Kernprobleem 1: er wordt gepland op bewerkingsgroepniveau in plaats van werkstation.</p>
       <ul class="n-bullets">
-        <li>Afwijkingen heffen elkaar op, knelpunt onzichtbaar</li>
-        <li>Ontwerp: disaggregatie naar <b>19 werkstations</b></li>
-        <li>SMT lijn 1 en 2 apart: lijngebonden</li>
-        <li>4 THT-stations samengevoegd: identiek, apart registreren is extra last</li>
-        <li>Theorie: hiërarchische productieplanning (Hax &amp; Meal, 1975)</li>
+        <li><b>Probleem:</b> knelpunt blijft onzichtbaar op groepsniveau</li>
+        <li><b>Impact:</b> toegezegde datum onhaalbaar, klant teleurgesteld</li>
+        <li><b>Ontwerp:</b> disaggregeren naar 19 werkstations</li>
+        <li><b>Verlossing:</b> knelpunt zichtbaar, belofte houdbaar</li>
       </ul>
-      <p class="n-bridge">Bruggetje: disaggregatie werkt alleen als de capaciteit ook klopt, vandaar kernprobleem 2.</p>
-      <p class="n-backup">Als ze vragen naar de scores → zie back-up selectiematrices.</p>
+      <p class="n-bridge">"disaggregatie werkt alleen als de capaciteit ook klopt, en daar gaat kernprobleem 2 over."</p>
     </aside>
   </section>
 
   <!-- ===== Slide 8 - KP2 (O) ===== -->
-  <section class="slide" data-phase="O">
+  <section class="slide" data-phase="O" data-kp="2">
+    <div class="kpnav"></div>
     <span class="eyebrow">Ontwerp - Kernprobleem 2</span>
     <h2>Capaciteit verkeerd ingesteld</h2>
-    <div class="accentbar"></div>
     <div class="flow">
       <div class="panel now fragment">
         <span class="tag diag">Diagnose</span>
-        <ul>
-          <li>Planning tegen <b>oneindige capaciteit</b> (Altendorfer, 2016)</li>
-          <li>Geen verdiscontering verzuim/stilstand</li>
-          <li>SMT <b>onder</b> plan, THT <b>boven</b> plan</li>
-        </ul>
+        <p class="diaglead">Gepland tegen <b>oneindige capaciteit</b></p>
+        <div class="kpvis">
+          <div class="capbar"><span class="nm">SMT</span><div class="captrack"><div class="capfill under" style="width:42%"></div><div class="capmark" data-l="100%" style="left:77%"></div></div></div>
+          <div class="capbar"><span class="nm">THT</span><div class="captrack"><div class="capfill over" style="width:96%"></div><div class="capmark" data-l="100%" style="left:77%"></div></div></div>
+          <div class="cap">SMT <b>onder</b> plan, THT <b>boven</b> plan</div>
+        </div>
+        <div class="onderbouwing">
+          <span class="ob-lbl">Impact</span>
+          <div class="kwrow"><span class="kw bad">THT overbelast</span><span class="kw bad">Overwerk nodig</span><span class="kw bad">SMT onderbenut</span></div>
+        </div>
       </div>
       <div class="arrow fragment" data-group="1">→</div>
       <div class="panel next fragment" data-group="1">
-        <span class="tag des">Ontwerp - 3 correcties</span>
-        <div class="choices">
-          <div class="choice" data-exp><div class="ct"><span>1 · Herkalibratie baseline</span></div><div class="cd"><span class="score" style="display:inline-block;margin-bottom:5px">4,45</span><br>Op gerealiseerde directe uren; periodiek bijgesteld door PM</div></div>
-          <div class="choice" data-exp><div class="ct"><span>2 · Capacity Cushion</span></div><div class="cd"><span class="score" style="display:inline-block;margin-bottom:5px">4,60</span><br>Streef 80% SMT / 75% THT; spoed overschrijfbaar via script</div></div>
-          <div class="choice" data-exp><div class="ct"><span>3 · OEE-meting op SMT</span></div><div class="cd"><span class="score" style="display:inline-block;margin-bottom:5px">5,00</span><br>Meetsoftware op pick-and-place (Nakajima, 1988); afh. VLAN sep 2026</div></div>
+        <span class="tag des">Ontwerp</span>
+        <p class="diaglead">Geijkte baseline <b>+ buffer uit de data</b></p>
+        <div class="kpvis">
+          <div class="capbar"><span class="nm">SMT</span><div class="captrack"><div class="capfill ok" style="width:55%"></div><div class="capmark buf" data-l="80%" style="left:62%"></div></div></div>
+          <div class="capbar"><span class="nm">THT</span><div class="captrack"><div class="capfill ok" style="width:50%"></div><div class="capmark buf" data-l="75%" style="left:58%"></div></div></div>
+          <div class="cap">Belasting <b>onder de buffer</b> • geen schijncapaciteit</div>
         </div>
-        <div class="theory">Complementair: baseline + variatiebuffer + meetbaarheid.</div>
+        <div class="onderbouwing">
+          <span class="ob-lbl">3 correcties</span>
+          <div class="choices">
+            <div class="choice open" style="cursor:default"><div class="ct"><span>1 · Baseline ijken op realisatie</span></div><div class="cd">Poreuze grens · directe uren</div></div>
+            <div class="choice open" style="cursor:default"><div class="ct"><span>2 · Buffer uit gemeten variatie</span></div><div class="cd">80% SMT / 75% THT</div></div>
+            <div class="choice open" style="cursor:default"><div class="ct"><span>3 · Verliezen meetbaar (OEE)</span></div><div class="cd">Normentijden bijstellen · vanaf sep 2026</div></div>
+          </div>
+        </div>
       </div>
     </div>
     <aside class="notes" hidden><p class="n-open">Kernprobleem 2: de beschikbare capaciteit in Ridder iQ klopt niet.</p>
       <ul class="n-bullets">
-        <li>Planning tegen oneindige capaciteit (Altendorfer, 2016)</li>
-        <li>Geen verdiscontering verzuim of stilstand</li>
-        <li>SMT onder plan, THT boven plan</li>
-        <li>3 correcties: herkalibratie, Capacity Cushion <b>80%/75%</b>, OEE-meting</li>
+        <li><b>Probleem:</b> capaciteit staat op oneindig</li>
+        <li><b>Impact:</b> THT structureel overwerk, SMT onderbenut</li>
+        <li><b>Ontwerp:</b> baseline op directe uren + buffer (80% SMT / 75% THT)</li>
+        <li><b>Verlossing:</b> planning binnen reële grenzen · OEE volgt als derde laag, verliezen meetbaar vanaf sep 2026</li>
       </ul>
-      <p class="n-bridge">Bruggetje: met een kloppende capaciteit kan kernprobleem 3, de afroeporders, worden aangepakt.</p>
+      <p class="n-bridge">"met een kloppende capaciteit kunnen we kernprobleem 3 aanpakken, de afroeporders."</p>
     </aside>
   </section>
 
   <!-- ===== Slide 9 - KP3 (O) ===== -->
-  <section class="slide" data-phase="O">
+  <section class="slide" data-phase="O" data-kp="3">
+    <div class="kpnav"></div>
     <span class="eyebrow">Ontwerp - Kernprobleem 3</span>
     <h2>Afroeporders verstoren de planning</h2>
-    <div class="accentbar"></div>
     <div class="flow">
       <div class="panel now fragment">
-        <div class="kpi-row" style="margin-bottom:14px">
-          <div class="kpi"><div class="num bad">8,9–12,5%</div><div class="lab">aandeel in de orderstroom</div></div>
-          <div class="kpi"><div class="num bad">33,7%</div><div class="lab">aandeel in voorgecalculeerde uren</div></div>
-        </div>
         <span class="tag diag">Diagnose</span>
-        <ul>
-          <li>Alle uren op <b>één vroege datum</b>, los van batch</li>
-          <li><b>Schijncapaciteit</b></li>
-        </ul>
+        <div class="kpi-row" style="margin:.3em 0 14px">
+          <div class="kpi"><div class="num bad">8,9%</div><div class="lab">van de orders</div></div>
+          <div class="kpi"><div class="num bad">33,7%</div><div class="lab">van de voorgecalculeerde uren</div></div>
+        </div>
+        <div class="kpvis">
+          <div class="tl before"><span></span><span></span><span class="spike"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="tlx"><span>vandaag</span><span>levermaand</span></div>
+          <div class="cap">Alle uren op <b>één vroege datum</b> → <b>schijncapaciteit</b></div>
+        </div>
+        <div class="onderbouwing">
+          <span class="ob-lbl">Impact</span>
+          <div class="kwrow"><span class="kw bad">Planbord schijnbaar vol</span><span class="kw bad">Planner schuift handmatig</span><span class="kw bad">Sales belt na</span></div>
+        </div>
       </div>
       <div class="arrow fragment" data-group="1">→</div>
       <div class="panel fragment" data-group="1">
-        <span class="tag des">Ontwerp - score 5,00</span>
-        <div class="choices">
-          <div class="choice" data-exp><div class="ct"><span>Batchconfiguratie op offerteniveau</span></div><div class="cd">CommandScript <i>Afroep_instellingen</i> legt batchindeling vast bij de offerte.</div></div>
-          <div class="choice" data-exp><div class="ct"><span>Boncorrectie bij productieorder</span></div><div class="cd">CommandScript <i>Bonnen_Afroep_Batches_Toepassen</i> corrigeert de bon.</div></div>
-          <div class="choice" data-exp><div class="ct"><span>Exportstap per batch</span></div><div class="cd">Belasting pas geregistreerd bij vrijgave voor productie.</div></div>
+        <span class="tag des">Ontwerp</span>
+        <p class="diaglead">Belast <b>pas bij de afroep</b>, niet vooraf</p>
+        <div class="kpvis">
+          <div class="tl after"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <div class="tlx"><span>vandaag</span><span>levermaand</span></div>
+          <div class="cap">Belasting <b>per batchvrijgave</b> • gespreid naar de levermaand</div>
         </div>
-        <div class="theory">Scripts werken op bestaande Ridder iQ-tabellen; staffelprijs blijft behouden.</div>
+        <div class="onderbouwing">
+          <span class="ob-lbl">Verlossing</span>
+          <div class="kwrow"><span class="kw good">Planbord klopt</span><span class="kw good">Geen nabel-acties</span><span class="kw good">Juiste levermaand</span></div>
+        </div>
       </div>
     </div>
     <aside class="notes" hidden><p class="n-open">Kernprobleem 3: afroeporders verstoren de planning met schijncapaciteit.</p>
       <ul class="n-bullets">
-        <li>8,9-12,5% van de orders, maar <b>33,7%</b> van de voorgecalculeerde uren</li>
-        <li>Alle uren op één vroege datum, los van de batch</li>
-        <li>Ontwerp: batchconfiguratie op offerteniveau (CommandScript)</li>
-        <li>Boncorrectie bij aanmaak productieorder</li>
-        <li>Belasting pas geregistreerd bij vrijgave voor productie</li>
+        <li><b>Probleem:</b> 8,9% van de orders, maar 33,7% van de uren, alle uren op één datum</li>
+        <li><b>Impact:</b> planbord lijkt vol, sales belt na</li>
+        <li><b>Ontwerp:</b> pas belasten bij daadwerkelijke afroep</li>
+        <li><b>Verlossing:</b> planbord klopt, geen nabellen</li>
       </ul>
-      <p class="n-bridge">Bruggetje: met de orderstroom gezuiverd, rest nog de sturing op de werkvloer.</p>
-      <p class="n-backup">Als ze vragen naar de scripts → zie back-up CommandScripts.</p>
+      <p class="n-bridge">"met de orderstroom gezuiverd, rest nog de sturing op de werkvloer."</p>
     </aside>
   </section>
 
   <!-- ===== Slide 10 - KP4 (O) ===== -->
-  <section class="slide" data-phase="O">
+  <section class="slide" data-phase="O" data-kp="4">
+    <div class="kpnav"></div>
     <span class="eyebrow">Ontwerp - Kernprobleem 4</span>
     <h2>Geen visuele prioriteit op de werkvloer</h2>
-    <div class="accentbar"></div>
     <div class="flow">
       <div class="panel now fragment">
         <span class="tag diag">Diagnose</span>
-        <ul>
-          <li>Schedule Adherence slechts <b>29,53%</b>.</li>
-          <li>Prioriteiten <b>mondeling</b> en <b>persoonsafhankelijk</b>.</li>
-        </ul>
+        <p class="diaglead">Planning <b>bereikt de werkvloer niet</b></p>
+        <div class="kpvis">
+          <div class="chan"><div class="chanbox">Planning</div><div class="chanline"></div><div class="chanbreak">✕</div><div class="chanline"></div><div class="chanbox">Werkvloer</div></div>
+          <div class="kpi-row" style="margin-top:12px"><div class="kpi"><div class="num bad">29,53%</div><div class="lab">Schedule Adherence</div></div></div>
+          <div class="cap">Prioriteit <b>mondeling en persoonsafhankelijk</b></div>
+        </div>
+        <div class="onderbouwing">
+          <span class="ob-lbl">Impact</span>
+          <div class="kwrow"><span class="kw bad">Verkeerde order eerst</span><span class="kw bad">Levering te laat</span><span class="kw bad">Overwerk nodig</span></div>
+        </div>
       </div>
       <div class="arrow fragment" data-group="1">→</div>
       <div class="panel next fragment">
-        <span class="tag des">Ontwerp - twee ondeelbare maatregelen</span>
-        <div class="choices">
-          <div class="choice" data-exp><div class="ct"><span>Shopfloor-module Ridder iQ</span></div><div class="cd"><span class="score" style="display:inline-block;margin-bottom:5px">5,00</span><br>Zichtbare, instelbare prioriteit per werkstation; al in gebruik voor urenregistratie</div></div>
-          <div class="choice" data-exp><div class="ct"><span>Dagelijkse standup</span></div><div class="cd"><span class="score" style="display:inline-block;margin-bottom:5px">5,00</span><br>Teamleads melden knelpunt; Productie Manager verwerkt direct in Ridder iQ</div></div>
+        <span class="tag des">Ontwerp</span>
+        <p class="diaglead">Het <b>kanaal</b> sluiten, niet meer data</p>
+        <div class="kpvis">
+          <div class="loop"><div class="loopnode">Planning</div><span class="looparr">→</span><div class="loopnode">Shopfloor-<br>module</div><span class="looparr">→</span><div class="loopnode">Standup<br>(max. 10 min)</div><span class="looparr">↺</span></div>
+          <div class="cap">Closed loop: prioriteit zichtbaar <b>én</b> terugkoppeling geborgd</div>
         </div>
-        <div class="theory">Ondeelbaar: zonder standup geen tijdige verwerking; zonder module geen bereik bij teamlead.</div>
+        <div class="onderbouwing">
+          <span class="ob-lbl">Verlossing</span>
+          <div class="kwrow"><span class="kw good">Juiste order eerst</span><span class="kw good">Minder te laat</span><span class="kw good">Minder overwerk</span></div>
+        </div>
       </div>
     </div>
-    <aside class="notes" hidden><p class="n-open">Kernprobleem 4: geen visuele prioriteit op de werkvloer.</p>
+    <aside class="notes" hidden><p class="n-open">Kernprobleem 4: er is geen visuele prioriteit op de werkvloer.</p>
       <ul class="n-bullets">
-        <li>Schedule Adherence slechts <b>29,53%</b></li>
-        <li>Prioriteiten mondeling en persoonsafhankelijk</li>
-        <li>Shopfloor-module Ridder iQ: zichtbare prioriteit per werkstation</li>
-        <li>Dagelijkse standup, maximaal 10 minuten</li>
-        <li>Ondeelbaar: zonder standup geen verwerking, zonder module geen bereik</li>
+        <li><b>Probleem:</b> prioriteit gaat mondeling, Schedule Adherence slechts 29,53%</li>
+        <li><b>Impact:</b> verkeerde order eerst, te laat, overwerk</li>
+        <li><b>Kern:</b> niet de data ontbreekt, wel het kanaal</li>
+        <li><b>Verlossing:</b> juiste order eerst, minder overwerk</li>
       </ul>
-      <p class="n-bridge">Bruggetje: geen van deze vier maatregelen werkt los van elkaar, vandaar de synthese.</p>
+      <p class="n-bridge">"geen van deze vier maatregelen werkt los van elkaar; samen vormen ze het veranderadvies."</p>
     </aside>
   </section>
 
-  <!-- ===== Slide 11 - SYNTHESE (O) ===== -->
-  <section class="slide" data-phase="O">
-    <span class="eyebrow">Ontwerp - synthese</span>
-    <h2>Synthese 2.0: vier maatregelen, één volgorde</h2>
-    <p class="sub">Geen maatregel staat op zichzelf.</p>
-    <div class="syn">
-      <div class="synblock b2 fragment"><div class="kp">KP 2</div><div class="t">Fundament</div><div class="d">Capaciteit kloppend maken</div></div>
-      <div class="synarrow fragment">→</div>
-      <div class="synblock b1 fragment"><div class="kp">KP 1</div><div class="t">Verfijnen</div><div class="d">Planning naar 19 werkstations</div></div>
-      <div class="synarrow fragment">→</div>
-      <div class="synblock b3 fragment"><div class="kp">KP 3</div><div class="t">Zuiveren</div><div class="d">Orderstroom zonder schijncapaciteit</div></div>
-      <div class="synarrow fragment">→</div>
-      <div class="synblock b4 fragment"><div class="kp">KP 4</div><div class="t">Borgen</div><div class="d">Uitvoering op de werkvloer</div></div>
-    </div>
-    <div class="synfoot fragment">
-      <span class="badge wmape"><b>KP 1, 2 en 3</b> sturen op de <b>WMAPE</b></span>
-      <span class="badge sa"><b>KP 4</b> stuurt op de <b>Schedule Adherence</b></span>
-    </div>
-    <aside class="notes" hidden><p class="n-open">Geen van de vier maatregelen is op zichzelf voldoende.</p>
-      <ul class="n-bullets">
-        <li>KP2 fundament: capaciteit kloppend maken</li>
-        <li>KP1 verfijnen: planning naar 19 werkstations</li>
-        <li>KP3 zuiveren: orderstroom zonder schijncapaciteit</li>
-        <li>KP4 borgen: uitvoering op de werkvloer</li>
-        <li>KP1, 2 en 3 sturen op <b>WMAPE</b>, KP4 op <b>Schedule Adherence</b></li>
-      </ul>
-      <p class="n-bridge">Bruggetje: deze volgorde vormt de basis van het veranderadvies.</p>
-    </aside>
-  </section>
-
-  <!-- ===== Slide 12 - VERANDERAANPAK: CALUWÉ + KNOSTER (V) ===== -->
+  <!-- ===== Slide 11 - VERANDERAANPAK: CALUWÉ + KNOSTER (V) ===== -->
   <section class="slide" data-phase="V">
     <span class="eyebrow">Verandering</span>
     <h2>Veranderaanpak: cultuur en weerstandsrisico</h2>
-    <p class="sub">De Caluwé &amp; Vermaak (2015) bepaalt de aanpak; Knoster (1991) het risico per kernprobleem.</p>
+    <p class="sub">Aanpak via Caluwé · risico via Knoster</p>
     <div class="caluwerow fragment">
-      <div class="caluwe geel"><div class="cn">Geel</div><div class="pct">13%</div></div>
-      <div class="caluwe blauw"><div class="cn">Blauw</div><div class="pct">27%</div></div>
-      <div class="caluwe rood"><div class="cn">Rood</div><div class="pct">8%</div></div>
-      <div class="caluwe groen dom"><div class="cn">Groen</div><div class="pct">46,7%</div><div class="cd">dominant</div></div>
-      <div class="caluwe wit"><div class="cn">Wit</div><div class="pct">4,4%</div></div>
+      <div class="caluwe geel"><div class="cn">Geel</div><div class="pct">11,1%</div><div class="cd">Macht, belangen, draagvlak en onderhandelen.</div></div>
+      <div class="caluwe blauw"><div class="cn">Blauw</div><div class="pct">22,2%</div><div class="cd">Rationeel plannen, meten en sturen.</div></div>
+      <div class="caluwe groen dom"><div class="cn">Groen</div><div class="pct">46,7%</div><div class="cd">Leren, reflecteren en ontwikkelen.</div></div>
+      <div class="caluwe rood"><div class="cn">Rood</div><div class="pct">2,2%</div><div class="cd">Mensen motiveren, belonen en straffen.</div></div>
+      <div class="caluwe wit"><div class="cn">Wit</div><div class="pct">17,8%</div><div class="cd">Eigen energie, ruimte geven en spontane evolutie.</div></div>
     </div>
     <div class="card fragment" style="margin-top:16px;border-left:6px solid var(--teal)">
       <span class="tag teal">Knoster: risico per kernprobleem</span>
       <div style="font-size:clamp(.86rem,1.2vw,1rem);margin:0;color:var(--ink);line-height:1.4">
-        <div style="margin-bottom:8px"><b style="color:var(--teal-dark)">KP 1:</b> belang + middelen</div>
-        <div style="margin-bottom:8px"><b style="color:var(--teal-dark)">KP 2:</b> plan (eigenaarschap, cyclus)</div>
-        <div style="margin-bottom:8px"><b style="color:var(--teal-dark)">KP 3:</b> belang (voordeel Sales)</div>
-        <div style="margin-bottom:0"><b style="color:var(--teal-dark)">KP 4:</b> belang - autonomieverlies teamleads; participatie + pilot</div>
+        <div style="margin-bottom:8px"><b style="color:var(--teal-dark)">KP 1:</b> <b>belang + middelen.</b> Meerwaarde ervaren · plantijd structureel</div>
+        <div style="margin-bottom:8px"><b style="color:var(--teal-dark)">KP 2:</b> <b>plan.</b> Eigenaarschap · update-cyclus</div>
+        <div style="margin-bottom:8px"><b style="color:var(--teal-dark)">KP 3:</b> <b>belang bij Sales.</b> Voordeel zien · anders weerstand</div>
+        <div style="margin-bottom:0"><b style="color:var(--teal-dark)">KP 4:</b> <b>belang bij teamleads.</b> Autonomieverlies · grootste risico</div>
       </div>
     </div>
-    <aside class="notes" hidden><p class="n-open">De veranderaanpak is gebaseerd op De Caluwé en Knoster.</p>
+    <aside class="notes" hidden><p class="n-open">De veranderaanpak rust op De Caluwé en Knoster.</p>
       <ul class="n-bullets">
-        <li>Groen dominant: <b>46,7%</b>, betrekken, pilots, leren</li>
-        <li>Blauw 27%, geel 13%, rood 8%, wit 4,4%</li>
-        <li>Knoster: 5 elementen, 1 element mist = voorspelbaar probleem</li>
-        <li>Risico's: KP1 belang/middelen, KP2 plan, KP3 belang Sales, KP4 belang teamleads</li>
+        <li>Cultuur is <b>groen-dominant</b>: leren, betrekken, pilots, niet top-down opleggen</li>
+        <li>Knoster: vijf elementen, mist er één dan ontstaat voorspelbaar gedrag (weerstand, verwarring)</li>
+        <li>Grootste risico per KP: KP1 belang + middelen (enige met <b>dubbel risico</b>) · KP2 plan · KP3 belang bij Sales · KP4 belang bij teamleads</li>
       </ul>
-      <p class="n-bridge">Bruggetje: op basis van dit risicoprofiel is de invoering gefaseerd.</p>
+      <p class="n-bridge">"op basis van dit risicoprofiel is de invoering gefaseerd."</p>
     </aside>
   </section>
 
-  <!-- ===== Slide 13 - ROADMAP (V) ===== -->
+  <!-- ===== Slide 12 - ROADMAP (V) ===== -->
   <section class="slide" data-phase="V">
     <span class="eyebrow">Verandering - implementatieadvies</span>
     <h2>Gefaseerde invoering</h2>
-    <p class="sub">Eén verandering tegelijk, met per fase een eigenaar, KPI en go/no-go. Klik op een fase.</p>
+    <p class="sub">Eén verandering tegelijk.</p>
     <div class="road fragment">
-      <div class="phase"><div class="pn">Fase<small>0</small></div><div class="body"><div class="ttl">Voorbereiding &amp; draagvlak</div><div class="det">Visie en belang expliciet maken bij Productie Manager, teamleads en Sales.</div></div></div>
-      <div class="phase spoed"><div class="pn">Fase<small>1</small></div><div class="body"><div class="ttl">Livegang afroeporders <span class="kpchip">KP 3 · spoed</span></div><div class="det">Al in de eindtestfase, gaat als eerste live.</div></div></div>
-      <div class="phase"><div class="pn">Fase<small>2</small></div><div class="body"><div class="ttl">Fundament op orde <span class="kpchip">KP 2</span></div><div class="det">Capaciteitsparameters corrigeren. Eigenaar: Productie Manager.</div></div></div>
-      <div class="phase"><div class="pn">Fase<small>3</small></div><div class="body"><div class="ttl">Planning verfijnen <span class="kpchip">KP 1</span></div><div class="det">Disaggregatie naar werkstationniveau, pilot op één afdeling.</div></div></div>
-      <div class="phase"><div class="pn">Fase<small>4</small></div><div class="body"><div class="ttl">Sturing op de werkvloer <span class="kpchip">KP 4</span></div><div class="det">Shopfloor-module + standup, 4 weken pilot. KPI: Schedule Adherence 29,53% → 85%.</div></div></div>
+      <div class="phase"><div class="pn">Fase<small>0</small></div><div class="body"><div class="ttl">Voorbereiding &amp; draagvlak</div><div class="det">Visie &amp; belang · Productie Manager, teamleads, Sales</div></div></div>
+      <div class="phase spoed"><div class="pn">Fase<small>1</small></div><div class="body"><div class="ttl">Livegang afroeporders <span class="kpchip">KP 3 · spoed</span></div><div class="det">Eindtestfase · gaat als eerste live</div></div></div>
+      <div class="phase"><div class="pn">Fase<small>2</small></div><div class="body"><div class="ttl">Fundament op orde <span class="kpchip">KP 2</span></div><div class="det">Herkalibratie · buffer · OEE</div></div></div>
+      <div class="phase"><div class="pn">Fase<small>3</small></div><div class="body"><div class="ttl">Planning verfijnen <span class="kpchip">KP 1</span></div><div class="det">19 werkstations · pilot op 1 afdeling</div></div></div>
+      <div class="phase"><div class="pn">Fase<small>4</small></div><div class="body"><div class="ttl">Sturing op de werkvloer <span class="kpchip">KP 4</span></div><div class="det">Shopfloor-module + standup · 4 weken pilot</div></div></div>
     </div>
-    <aside class="notes" hidden><p class="n-open">Het implementatieadvies is gefaseerd, passend bij de groene cultuur.</p>
+    <aside class="notes" hidden><p class="n-open">Passend bij de groene cultuur: één verandering tegelijk, in vijf fasen.</p>
       <ul class="n-bullets">
-        <li>Fase 0: draagvlak creëren</li>
-        <li>Fase 1: afroeporders, al in eindtestfase (spoed)</li>
+        <li>Fase 0: draagvlak en visie</li>
+        <li>Fase 1: afroeporders, zit al in eindtestfase, gaat als eerste live (spoed)</li>
         <li>Fase 2: fundament capaciteit, eigenaar Productie Manager</li>
         <li>Fase 3: planning verfijnen, pilot op één afdeling</li>
         <li>Fase 4: sturing werkvloer, KPI Schedule Adherence <b>29,53% → 85%</b></li>
       </ul>
-      <p class="n-bridge">Bruggetje: dat brengt mij bij de conclusie.</p>
+      <p class="n-bridge">"die fasering brengt de vier interventies samen in één conclusie."</p>
     </aside>
   </section>
 
-  <!-- ===== Slide 14 - CONCLUSIE / SLOT ===== -->
+  <!-- ===== Slide 13 - CONCLUSIE / SLOT ===== -->
   <section class="slide cover-slide" data-phase="done">
     <div class="cover-logos">
       <div class="chip"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAyAAAACcCAMAAACwTj/JAAAAYFBMVEUnmYn///9dsqbK5uKTzMRzvbJZsKTo9PJqua7a7ut/wrmn1s80n5C+4dz5/PxQrJ+Fxr2o1tD0+vnU6+i029ZCppji8e8zno/D495HqJtmtquc0MmLyMDV6+i23NeXzsbW5SN5AAAKxUlEQVR4nO2d2WLaOhBAIVvTNE2bjYS0t/3/v7wQigFrZjSWxjaGcx4TSyPLOnjRNps7ebi+ADg7Zl4/PmYAZwh+ABjgB4CBy4/bsUsJMBL4AWCAHwAG+AFggB8ABvgBYIAfAAb4AWCAHwAG+AFgYAiCHwC6H3djFw1gfPADwAA/AAzwA8AAPwAM8APAAD8ADPADwAA/AAzwA8AAPwAMWn78HLs8AEcFfgAY4AeAAX4AGOAHgEEHP26+X5bx7l/at68Yy3cp0cu9o0h3UsrH/SM+Csss8UMrxsVC6NP1cmme4f1jaWl/vSlZFueY8qIV+7o0xz9LszoO8ftx8VB+gbyTE2tiXFsZX8tp1Mrf47uYcv+IX+WFTtAuw81TTa5frBO8/1qesWZexXVMUEL8LM/xSf0ZStmm6dUPryH9xVAEmTvubUchSJ0fpiA1fszn73Km/QtS4UcnQ/6l6NkP3wYKlTEsQzRBvmjPCDuOQZBKPyxB7mse3VZ8F3PtXZAqP1aGuJ+yNsf37YfLkD5jaILMf2WLdQSC1PphCFLrx3z+R8q2b0Eq/VjVyGv2wm/4PLp/P1at92LMGKog8+xPyfiCVPuhC/Ja7Yf8ItezINV++A1ZH/s7d1BA21213psBYmiG6II8505+dEHq/VAFqb9/rHlMM+5XkAA/3IasjrzKHRPSdlfPfZYhQTE0C3VBsrfPsQUJ8EMTJMYPyZBeBQnxYz5feD7yz4bzw/x2cBMWQzbEEOQh80sysiARfiiCRPkhvMn1KUiQH05DBvTDMCSkFVgxDEG0L5VbxhUkpmZEQeq+7x7yt5V3j4KE+eEzZEg/VEMC/VBiWILYXYzjChJUM5IgkX4kzyH9CRLox3z+1fWUZRLqh/L9OdQPOYYpiN0ZMqYgUTUjCHL/X0zWWw4L3psgoX6sDMn3g9m8xvohNsbXWD/EGKYg0meYHWMK8iUoV0GQ96CsGw66afsS5DYw30/sUWp57IZVQvoSfQQxrO9rIwpyH5WrIEj0L9/hr0xfgnwLzDfNvYAjaLxDxFgYVYAgPhAkhqMUxPqWhyA+ECSG4xTkQR9xgiA+ECSG4xTEGHGSF+RvYNEPll0KE0R4Fe1XkMjvLvv5TkeQuwubOy1hh8abi3GtXYYSCdUFwfKCvOlFFEu4MM7pILQiSPHV3EcT5DJT6RfPSsJv+7kv1eRXYuJferyDe7smyOIjU+oXJWFPgjgGr98qV8DdeB0xfiiGlAjypPUZ5QUxEL/TfnUmHkOQzLCCFW+XckrzW/kO+UOtd71CRZBFfuChZogzsIbcsLJD19d8yJfA23hdMRRDih7jxHkNszMTJO+HasiIgrgGVT32Uplyw8rPMlojP5p7G68vhvwkV/aeo9yxzkoQV9I3Mem3fMI1fQhiT6TYIg/NdAbWkBtWdgDXJ/LTprfx+mJECqKMODknQR58acVSjXgH8c0wl8eeOQNrnJMgyk0LQRLEUiHIjhMVRK5oBEkQS4UgO05VELHlIkiCWCoE2XGqgoiz8xEkQSwVguw4WUGk6bcIkiCWCkF2nKwgUj8AgiSIpUKQHacriDD9FkESxFIhyI4TFuQp6QxBkASxVAiy44QFSa8zgiT4Kk4GQRqmKci8PQYMQRLEUiHIDl/jFdMK34mOTJD29NtzEsSZtZjUN3gOQYaN0YMg7UXQzkkQ5x2kBgQZNEYfgrSm3yJIKAgyaIw+BGlNv0WQUBBk0Bi9CHJ4uY5PkCsPuUXrEaTThdQ4bUGulEo7mH57fIL4yMyyQ5AN5WfyyakL8kP8+8H026kKkpmmjSAbys/kk1MXRFsFYG+hWQQJBUEGjVEtyJu8PvTe9FsECQVBBo1RLYi2XvhuCQIECQVBBo1RL4i2D0BT6QgSCoIMGiNAEGV7kqYVI0goCDJojABBtE2LttNvESQUBBk0RoQgM3m12e2wSgQJBUEGjREiyFL853ZJdAQJBUEGjREiiLbBx2b6LYKEgiCDxogRROkM2Yw4QZBQEGTQGDGCzD7Ef89f1v9DkFAQZNAYQYJou0esp98iSCgIMmiMKEHu5c6Q9fRbBAkFQQaNESWIktF6+i2ChIIgg8YIE0TpDJkvJysI80FaIEhDiSBKZ8jzhbzhmPPcehEkt83mJ7lGgyCdLqTG+QiiLOOl4Tw35qS3QZBBYwQKouxhp+A8NwRpgyAN4vbhwn6LxyLIjXiMgqt0kxPEmbW4C7ozLoI0/BbTHtPSo60YykbBIq7SnaogYlJp8yEBBGk4/rV5WzHe5M4QEVfpJidIzdq8zuduBGmYnCBdVs9ylQ5BUhCkYXqCzORPuhKu0iFICoI0TFCQV/nJXMBVOgRJQZCGCQqifFgQcJUOQVIQpGGKgii1mOIqHYKkIEjDJAVR1iJNcJUOQVIQpGGSgmhrkbZxlQ5BUhCkYZqCKNNv27hKhyApCNIwTUG0tUhbuEqHICkI0jBRQbS1SA9xlQ5BUhCkYaqCKGuRFtUrgrQ5C0FeXGnlsX/exnvpivGnKoZyTZW1SEvqdWKC5ObpbpDnlo0oiGuc5FL+3XMG1lBGJ3n2xFZWY3PvH3j5JmTaQlmMpPYupUy/3cdRAWumJsjCYcir/BljREHmuQ0ZZ6ofPQniMET7XOrfYDNviHz/qBdEmX67T/b8N0xNEIchS+Uz35iC5A35oT03OwNrqONbXzKbrGptt8sOtItLG7XXu/o9R7n77eGsvxEXbdjnT5q3NursS277XK2ljSrI/DnTVtT3Su+1UOi2fbKH2i2aI2Oo1zTfGeKsvyMR5DnN2z0s08u4ghTjvRYKZyqIthbpDmf9IUgbBMkwDUHU15stzvpDkDYIkmEigihrkTY46w9B2iBIhokIoq1FusVZf3WCvFXXxD/+S/NGkA3ea6HQaSkcF+mKmN4R5jUxCnrr7c4QZ/3VCdJpnRULQRDvxBc3t75TqhPE04fbiYX7WgxUIqkaMz/WETEKBFmav7HO6qsUROsJ7YrwiKV1nJXy6DyjOkGy74YdefKNUrGINUT+mYk1RIpRMt7LXIvUWXu1ggQZIgiidviV4fWjVpBYQwL8iG292m249xhFAyKttUidlVctSIwhkiDakJEi3H5UCxJpSIgfka1Xf0yNi3Et5l8kyIURxll39YKEGCIKEmiI3496QeIMeRLWwS0iqvVar3FRMWQ/CofUG+/IzqoLECTCEFmQMEM6+BEgSNSLWZgfUa3X/swRE0Pxo1AQYy1SZ81FCBLQIBRBggzxzX74R4AgMYY8xPkR03q1tjtIjMJJWXoXjbPiQgSpbxCaICGGdPIjRJAIQx68y9H7qG+9OT/6jVE6a1Fdi9RZbzGCVDcIVZAAQ7r5ESNIvSHBftS33rwf9V3qRoxSQdS1SJ3VFiRIbYPQBak2pKMfQYLUVsjDR9eAWepar8eP2hhWJRfPe9fWIvVVWpgglQ3CEKTSkK5+RAlSVyE9+FHXen1+1MUw67h8YQhlSIbzhMIEqRt1Yk7wrzGksx9hglQZ4hwW05Hb98ysLY13v6/lMexzfhXz9TyHLr9LKb0fNl+kxGVbPIr7njmxt4R+FUvpwbmr1MFpiBmV9Nj9Li31e/T7BwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABUrKkPcPL8D/W2+dT66KrzAAAAAElFTkSuQmCC" alt="Contecto"></div>
@@ -887,7 +1114,7 @@
     </div>
     <span class="pill">Conclusie</span>
     <h1 style="margin-top:18px;font-size:clamp(2rem,4.6vw,3.6rem)">Productieplanning 2.0</h1>
-    <p class="lead" style="max-width:46ch">Vier samenhangende interventies brengen de WMAPE theoretisch richting ≤10% en de Schedule Adherence richting ≥85%, gevalideerd via expert-validatie. Invoering en evaluatie vallen buiten de scope.</p>
+    <p class="lead" style="max-width:46ch">Vier interventies · WMAPE ≤10% · Schedule Adherence ≥85% · expert-gevalideerd</p>
     <div class="cover-meta" style="margin-top:34px">
       <div class="it"><span>Dank voor uw aandacht</span><b style="font-size:1.3em">Vragen?</b></div>
     </div>
@@ -923,7 +1150,7 @@
 <div id="presenterBar">
   <div class="pb-group"><span class="pb-dot" id="pbDot"></span><span id="pbLinkStatus">Niet gekoppeld</span></div>
   <div class="pb-group"><span>⏱ <span id="pbTimer">00:00</span></span><button id="pbReset" style="background:none;border:none;color:#fff;cursor:pointer;font-size:.9rem;padding:0 8px;margin-left:6px;opacity:.7;transition:opacity .2s" title="Timer resetten">↻</button><span id="pbCounter"></span></div>
-  <div class="pb-group"><button id="pbOpenAudience">Open publieksscherm</button></div>
+  <div class="pb-group"><button id="pbScreenFmt" title="Formaat publieksscherm: Auto past zich vanzelf aan, of kies Monitor / TV">Scherm: Auto</button><button id="pbOpenAudience">Open publieksscherm</button></div>
 </div>
 <div id="peekWrap">
   <span class="pw-label">Volgende dia</span>
@@ -975,10 +1202,12 @@
       <button class="bp-tab active" data-bp="theorie">Theorietabel</button>
       <button class="bp-tab" data-bp="selectie">Selectiematrices</button>
       <button class="bp-tab" data-bp="nulmeting">Power BI-nulmeting</button>
+      <button class="bp-tab" data-bp="werkstations">Werkstations (KP1)</button>
       <button class="bp-tab" data-bp="oee">OEE</button>
       <button class="bp-tab" data-bp="knoster">Knoster - 5 elementen</button>
       <button class="bp-tab" data-bp="greiner">Greiner</button>
       <button class="bp-tab" data-bp="caluwe">Caluwé</button>
+      <button class="bp-tab" data-bp="implementatie">Implementatieplan</button>
       <button class="bp-tab" data-bp="bv">Betrouwbaarheid &amp; validiteit</button>
       <button class="bp-tab" data-bp="qa">5 vragen + ankerantwoord</button>
     </div>
@@ -986,7 +1215,7 @@
 
       <div class="bp-sec active" id="bp-theorie">
         <h4>Theoretisch kader: wat staat er, waarom bij Contecto</h4>
-        <p class="note">Klik een theorie open voor het volledige antwoord. Let op: de hoofdslide "kernselectie uit 15 bronnen" klopt niet meer - de Bronvermelding van het definitieve Adviesrapport (p.67-68) telt <b>29</b> unieke bronnen. Noem bij een kritische vraag liever "een kernselectie uit de literatuurlijst" dan een vast getal.</p>
+        <p class="note">Klik een theorie open voor het volledige antwoord. Noem bij een kritische vraag liever "een kernselectie uit de literatuurlijst" dan een vast getal.</p>
 
         <div class="bp-group-label">Kernprobleem 1 - planning op te grof groepsniveau</div>
 
@@ -1220,6 +1449,72 @@
         <div class="bp-src">Bron: Adviesrapport Productieplanning 2.0, §4.1.1 (Tabel 6), §4.3.1 (DV7), §4.4.1 (Tabel 13), Bijlage 20 Nulmeting Contecto.</div>
       </div>
 
+      <div class="bp-sec" id="bp-werkstations">
+        <h4>Zo gaat de planning eruitzien op werkstationniveau</h4>
+        <p class="note">Elke rij is een werkstation met zijn eigen tijdlijn van geplande bewerkingen, in plaats van één gedeelde balk per bewerkingsgroep. Echte werkstations uit de disaggregatie-analyse.</p>
+        <div class="planboard" data-fig="werkstations">
+          <div class="planrow">
+            <div class="plan-label">SMT Lijn 1</div>
+            <div class="plan-timeline"><div class="plan-slots">
+              <div class="plan-block" style="width:44%"></div><div class="plan-block" style="width:38%"></div>
+            </div></div>
+          </div>
+          <div class="planrow">
+            <div class="plan-label">SMT Lijn 2</div>
+            <div class="plan-timeline"><div class="plan-slots">
+              <div class="plan-block" style="width:90%"></div>
+            </div></div>
+          </div>
+          <div class="planrow">
+            <div class="plan-label">Vapor 1-2</div>
+            <div class="plan-timeline"><div class="plan-slots">
+              <div class="plan-block" style="width:14%"></div><div class="plan-block" style="width:24%"></div><div class="plan-block" style="width:9%"></div><div class="plan-block" style="width:19%"></div>
+            </div></div>
+          </div>
+          <div class="planrow">
+            <div class="plan-label">THT workstation 1-4</div>
+            <div class="plan-timeline">
+              <div class="plan-slots">
+                <div class="plan-block" style="width:13%"></div><div class="plan-block" style="width:17%"></div><div class="plan-block" style="width:21%"></div><div class="plan-block" style="width:11%"></div><div class="plan-block" style="width:19%"></div>
+              </div>
+              <div class="plan-slots">
+                <div class="plan-block" style="width:16%"></div><div class="plan-block" style="width:12%"></div><div class="plan-block" style="width:23%"></div><div class="plan-block" style="width:15%"></div><div class="plan-block" style="width:18%"></div>
+              </div>
+              <div class="plan-slots">
+                <div class="plan-block" style="width:20%"></div><div class="plan-block" style="width:14%"></div><div class="plan-block" style="width:16%"></div><div class="plan-block" style="width:25%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="planrow">
+            <div class="plan-label">AOI bedienen</div>
+            <div class="plan-timeline"><div class="plan-slots">
+              <div class="plan-block" style="width:28%"></div><div class="plan-block" style="width:33%"></div><div class="plan-block" style="width:18%"></div>
+            </div></div>
+          </div>
+          <div class="planrow">
+            <div class="plan-label">Bestucktafel 1-3</div>
+            <div class="plan-timeline"><div class="plan-slots">
+              <div class="plan-block" style="width:44%"></div><div class="plan-block" style="width:38%"></div>
+            </div></div>
+          </div>
+          <div class="planrow">
+            <div class="plan-label">Wasmachine</div>
+            <div class="plan-timeline"><div class="plan-slots">
+              <div class="plan-block" style="width:52%"></div><div class="plan-block" style="width:24%"></div>
+            </div></div>
+          </div>
+          <div class="planrow">
+            <div class="plan-label">Lasergrafeermachine</div>
+            <div class="plan-timeline"><div class="plan-slots">
+              <div class="plan-block" style="width:14%"></div><div class="plan-block" style="width:24%"></div><div class="plan-block" style="width:9%"></div><div class="plan-block" style="width:19%"></div>
+            </div></div>
+          </div>
+        </div>
+        <p class="note" style="margin-top:14px">Dat <b>THT workstation 1-4</b> 11 van de 12 bewerkingen uit de oude groep 02.01-THT bundelt, is op zichzelf geen probleem - het aantal bewerkingstypen per station zegt niets over de belasting. Pas met de werkelijke frequentie en duur van elke bewerking per station wordt zichtbaar of een station een knelpunt is; dat is precies wat op groepsniveau (één gemiddelde balk) verloren ging en wat disaggregatie weer meetbaar maakt.</p>
+        <button class="bp-share" data-bp-share="werkstations">Deel deze afbeelding op publieksscherm</button>
+        <div class="bp-src">Bron: Bijlage "Bewerkingen verdeeld over workstations.xlsx" (tabblad Workstations), gekoppeld aan Adviesrapport kernprobleem 1, Tabel 2 (19 werkstations).</div>
+      </div>
+
       <div class="bp-sec" id="bp-oee">
         <h4>OEE - Overall Equipment Effectiveness</h4>
         <p class="note">Concrete OEE-percentages (beschikbaarheid x prestatie x kwaliteit) voor Contecto staan ook in het definitieve Adviesrapport niet. Expliciet citaat uit het rapport: "Bij SMT zijn deze OEE-verliezen niet gekwantificeerd."</p>
@@ -1234,6 +1529,130 @@
       </div>
 
       <div class="bp-sec" id="bp-knoster">
+        <div class="knoster-container" data-fig="knoster">
+          <!-- KNOSTER MATRIX (Bovenzijde) -->
+          <div class="knoster-matrix">
+            <!-- Rij 1: Succes -->
+            <div class="matrix-row">
+              <div class="blocks">
+                <span class="block visie">Visie</span>
+                <span class="block belang">Belang</span>
+                <span class="block plan">Plan</span>
+                <span class="block middelen">Middelen</span>
+                <span class="block competenties">Competenties</span>
+              </div>
+              <div class="arrow">➔</div>
+              <div class="outcome succes">Verandering</div>
+            </div>
+
+            <!-- Rij 2: Verwarring -->
+            <div class="matrix-row">
+              <div class="blocks">
+                <span class="block empty"></span>
+                <span class="block belang">Belang</span>
+                <span class="block plan">Plan</span>
+                <span class="block middelen">Middelen</span>
+                <span class="block competenties">Competenties</span>
+              </div>
+              <div class="arrow">➔</div>
+              <div class="outcome">Verwarring</div>
+            </div>
+
+            <!-- Rij 3: Weerstand (KP 1, KP 3, KP 4) -->
+            <div class="matrix-row">
+              <div class="blocks">
+                <span class="block visie">Visie</span>
+                <span class="block gap-container">
+                  <span class="kp-badge">KP 1</span>
+                  <span class="kp-badge">KP 3</span>
+                  <span class="kp-badge alert">KP 4</span>
+                </span>
+                <span class="block plan">Plan</span>
+                <span class="block middelen">Middelen</span>
+                <span class="block competenties">Competenties</span>
+              </div>
+              <div class="arrow">➔</div>
+              <div class="outcome">Weerstand</div>
+            </div>
+
+            <!-- Rij 4: Chaos (KP 2) -->
+            <div class="matrix-row">
+              <div class="blocks">
+                <span class="block visie">Visie</span>
+                <span class="block belang">Belang</span>
+                <span class="block gap-container">
+                  <span class="kp-badge">KP 2</span>
+                </span>
+                <span class="block middelen">Middelen</span>
+                <span class="block competenties">Competenties</span>
+              </div>
+              <div class="arrow">➔</div>
+              <div class="outcome">Chaos</div>
+            </div>
+
+            <!-- Rij 5: Frustratie (KP 1) -->
+            <div class="matrix-row">
+              <div class="blocks">
+                <span class="block visie">Visie</span>
+                <span class="block belang">Belang</span>
+                <span class="block plan">Plan</span>
+                <span class="block gap-container">
+                  <span class="kp-badge">KP 1</span>
+                </span>
+                <span class="block competenties">Competenties</span>
+              </div>
+              <div class="arrow">➔</div>
+              <div class="outcome">Frustratie</div>
+            </div>
+
+            <!-- Rij 6: Angst -->
+            <div class="matrix-row">
+              <div class="blocks">
+                <span class="block visie">Visie</span>
+                <span class="block belang">Belang</span>
+                <span class="block plan">Plan</span>
+                <span class="block middelen">Middelen</span>
+                <span class="block empty"></span>
+              </div>
+              <div class="arrow">➔</div>
+              <div class="outcome">Angst</div>
+            </div>
+          </div>
+
+          <hr class="separator">
+
+          <!-- KERNPROBLEMEN CARDS (Onderzijde) -->
+          <div class="kp-grid">
+            <div class="kp-card">
+              <div class="kp-header">KP 1 · Disaggregatie</div>
+              <div class="kp-title">Belang + middelen</div>
+              <p class="kp-text">Meerwaarde workstationniveau moet ervaren worden; extra plantijd structureel nodig.</p>
+              <div class="badge-row"><span class="badge red">Dubbel risico</span></div>
+            </div>
+
+            <div class="kp-card">
+              <div class="kp-header">KP 2 · Capaciteit</div>
+              <div class="kp-title">Plan</div>
+              <p class="kp-text">Zonder vast eigenaarschap en update-cyclus vervalt de correctie (chaos).</p>
+              <div class="badge-row"><span class="badge red">Risico</span></div>
+            </div>
+
+            <div class="kp-card">
+              <div class="kp-header">KP 3 · Afroeporders</div>
+              <div class="kp-title">Belang bij Sales</div>
+              <p class="kp-text">Sales moet voordeel van betrouwbaardere leverafspraken zien.</p>
+              <div class="badge-row"><span class="badge red">Risico</span></div>
+            </div>
+
+            <div class="kp-card highlight-green">
+              <div class="kp-header">KP 4 · Shopfloor</div>
+              <div class="kp-title">Belang bij teamleads</div>
+              <p class="kp-text">Informele regierol verschuift naar systeemsturing (autonomieverlies).</p>
+              <div class="badge-row"><span class="badge red-dark">Grootste risico</span></div>
+            </div>
+          </div>
+        </div>
+        <button class="bp-share" data-bp-share="knoster" style="margin-bottom:18px;margin-top:18px;">Deel deze afbeelding op publieksscherm</button>
         <h4>Knoster (1991) - 5 elementen van verandering</h4>
         <p class="note">Correcte 5 elementen volgens het Adviesrapport (§6.2.1): visie, belang, plan, middelen, competenties.</p>
         <table>
@@ -1257,6 +1676,31 @@
       </div>
 
       <div class="bp-sec" id="bp-greiner">
+        <div class="card" data-fig="greiner" style="margin-bottom:18px">
+          <span class="tag teal">Greiner-groeicurve - waar Contecto staat</span>
+          <svg viewBox="0 0 640 230" style="width:100%;height:auto;margin-top:10px" xmlns="http://www.w3.org/2000/svg">
+            <line x1="40" y1="200" x2="620" y2="200" stroke="#cdd9d6" stroke-width="2"/>
+            <line x1="40" y1="200" x2="40" y2="20" stroke="#cdd9d6" stroke-width="2"/>
+            <path d="M40,190 C100,170 120,140 150,120" fill="none" stroke="#9bada9" stroke-width="3"/>
+            <path d="M150,120 C170,110 190,95 230,85" fill="none" stroke="var(--teal)" stroke-width="3"/>
+            <path d="M230,85 C270,72 310,60 360,52" fill="none" stroke="var(--teal-dark)" stroke-width="3"/>
+            <path d="M360,52 C390,46 410,42 430,40" fill="none" stroke="var(--bad)" stroke-width="3"/>
+            <path d="M430,40 C470,34 520,28 580,22" fill="none" stroke="#9bada9" stroke-width="3" stroke-dasharray="6 6"/>
+            <circle cx="150" cy="120" r="5" fill="#9bada9"/>
+            <circle cx="230" cy="85" r="5" fill="var(--teal)"/>
+            <circle cx="360" cy="52" r="5" fill="var(--teal-dark)"/>
+            <circle cx="430" cy="40" r="7" fill="var(--bad)"/>
+            <text x="46" y="216" font-size="11" fill="#5c6f6b">1. Creativiteit (2002)</text>
+            <text x="118" y="138" font-size="10" fill="#9bada9">Leiderschapscrisis</text>
+            <text x="160" y="103" font-size="11" fill="#5c6f6b">2. Sturing (Ridder iQ)</text>
+            <text x="232" y="103" font-size="10" fill="#9bada9">Autonomiecrisis</text>
+            <text x="262" y="68" font-size="11" fill="#5c6f6b">3. Delegatie (sinds 2019, ×4)</text>
+            <text x="340" y="36" font-size="10" font-weight="700" fill="var(--bad)">Controlecrisis - nu</text>
+            <text x="455" y="16" font-size="11" fill="#9bada9">4. Coördinatie (advies)</text>
+          </svg>
+          <p class="note" style="margin-top:8px">2002 creativiteit (pionier mechatronica) → invoering Ridder iQ (sturing) → 2019 orderstroom ×4, planning gedelegeerd naar de werkvloer → <b>nu: controlecrisis</b>. Productieplanning 2.0 zet de stap richting fase 4 (coördinatie).</p>
+        </div>
+        <button class="bp-share" data-bp-share="greiner">Deel deze afbeelding op publieksscherm</button>
         <h4>Greiner (1972) - groeimodel en controlecrisis</h4>
         <p class="note">Greiner onderscheidt vijf (later zes) groeifasen, elk gedragen door een eigen besturingsvorm. Elke fase eindigt in een crisis die om een nieuwe besturingsvorm vraagt: zonder die overgang loopt de organisatie vast.</p>
         <table>
@@ -1273,18 +1717,92 @@
       </div>
 
       <div class="bp-sec" id="bp-caluwe">
+        <div class="caluwerow dom-on" data-fig="caluwe" style="margin-bottom:18px">
+          <div class="caluwe geel"><div class="pct">11,1%</div><div class="cn">Geel</div><div class="cd">Macht, belangen, draagvlak en onderhandelen.</div></div>
+          <div class="caluwe blauw"><div class="pct">22,2%</div><div class="cn">Blauw</div><div class="cd">Rationeel plannen, meten en sturen.</div></div>
+          <div class="caluwe groen dom hi"><div class="pct">46,7%</div><div class="cn">Groen</div><div class="cd">Leren, reflecteren en ontwikkelen.</div></div>
+          <div class="caluwe rood"><div class="pct">2,2%</div><div class="cn">Rood</div><div class="cd">Mensen motiveren, belonen en straffen.</div></div>
+          <div class="caluwe wit"><div class="pct">17,8%</div><div class="cn">Wit</div><div class="cd">Eigen energie, ruimte geven en spontane evolutie.</div></div>
+        </div>
+        <button class="bp-share" data-bp-share="caluwe" style="margin-bottom:18px">Deel deze afbeelding op publieksscherm</button>
         <h4>Kleurenmodel De Caluwé &amp; Vermaak (2015) - vijf manieren van denken over veranderen</h4>
         <p class="note">Geen kleur is "goed" of "fout" - elke kleur is een aanname over wat mensen in beweging brengt, en effectief binnen een bepaalde context.</p>
         <table>
           <tr><th>Kleur</th><th>Kernaanname</th><th>Score bij Contecto</th></tr>
-          <tr><td>Geel (machtsdenken)</td><td>Mensen veranderen door belangen te bundelen, macht en coalities te vormen</td><td>13%</td></tr>
-          <tr><td>Blauw (planmatig denken)</td><td>Mensen veranderen door vooraf een doel en een stappenplan vast te leggen</td><td>27%</td></tr>
-          <tr><td>Rood (mensgericht denken)</td><td>Mensen veranderen door te verleiden, te motiveren en te belonen</td><td>8%</td></tr>
+          <tr><td>Geel (machtsdenken)</td><td>Mensen veranderen door belangen te bundelen, macht en coalities te vormen</td><td>11,1%</td></tr>
+          <tr><td>Blauw (planmatig denken)</td><td>Mensen veranderen door vooraf een doel en een stappenplan vast te leggen</td><td>22,2%</td></tr>
           <tr><td>Groen (leergericht denken)</td><td>Mensen veranderen door zelf te leren, te reflecteren en bewust te worden</td><td><b>46,7% - dominant</b></td></tr>
-          <tr><td>Wit (zelforganiserend denken)</td><td>Mensen en organisaties veranderen vanzelf; de veranderaar faciliteert en verwijdert obstakels</td><td>4,4%</td></tr>
+          <tr><td>Rood (mensgericht denken)</td><td>Mensen veranderen door te verleiden, te motiveren en te belonen</td><td>2,2%</td></tr>
+          <tr><td>Wit (zelforganiserend denken)</td><td>Mensen en organisaties veranderen vanzelf; de veranderaar faciliteert en verwijdert obstakels</td><td>17,8%</td></tr>
         </table>
         <p class="note">Toepassing bij Contecto (Adviesrapport §6.1): de vragenlijst is afgenomen op de productievloer en wijst groen als dominante kleur aan. Dit betekent dat medewerkers openstaan voor verandering, mits zij worden betrokken en ruimte krijgen om te experimenteren en te leren. Top-down opgelegde verandering (blauw/geel) past niet bij deze cultuur en vergroot het risico op weerstand. Dit is de reden dat het implementatieplan (hoofdstuk 6.3) is opgebouwd met pilots, betrokkenheid van teamleads en expliciete evaluatiemomenten in plaats van een vast, van bovenaf opgelegd protocol.</p>
         <div class="bp-src">Bron: Adviesrapport Productieplanning 2.0, §6.1 Kleurenmodel Caluwé (Tabel 18 Scores vragenlijst) en Bijlage 21 Organisatiecultuur Caluwé; oorspronkelijke theorie: De Caluwé, L., &amp; Vermaak, H. (2015). <i>Leren veranderen: een handboek voor de veranderkundige</i> (3e druk). Boom uitgevers. Achtergrond: <a href="https://www.decaluwe.nl/articles/DenkenOverVeranderenInVijfKleuren.pdf" target="_blank" rel="noopener">De Caluwé - Denken over veranderen in vijf kleuren (origineel artikel, pdf)</a>; <a href="https://www.toolshero.nl/verandermanagement/kleurdenken-caluwe-vermaak/" target="_blank" rel="noopener">Toolshero - Kleurdenken De Caluwé &amp; Vermaak</a>.</div>
+      </div>
+
+      <div class="bp-sec" id="bp-implementatie">
+        <h4>Implementatieplan - eigen rol na afstuderen (Adviesrapport §6.3)</h4>
+        <p class="note">Senn Lauwers treedt na afstuderen in dienst bij Contecto (rol voor de helft sales, voor de helft procesoptimalisatie) en voert dit implementatieadvies zelf uit. De tijdlijn hieronder is het publieksscherm; de tabellen eronder zijn back-up-detail.</p>
+        <div class="implgantt" data-fig="implementatie">
+          <div class="iaxis"><span>wk 1</span><span>wk 5</span><span>wk 10</span><span>wk 15</span><span>wk 20</span><span>wk 26</span></div>
+          <div class="implrows">
+            <div class="implrow"><div class="irlabel">Fase 0<small>Draagvlak</small></div><div class="irtrack">
+              <div class="irbar f0" style="left:0%;width:7.7%">wk 1-2</div>
+            </div></div>
+            <div class="implrow"><div class="irlabel">Fase 1<small>KP3 · spoed</small></div><div class="irtrack">
+              <div class="irbar f1" style="left:0%;width:15.4%">wk 1-4 · afroeporders</div>
+            </div></div>
+            <div class="implrow"><div class="irlabel">Fase 2<small>KP2 · capaciteit</small></div><div class="irtrack">
+              <div class="irbar f2" style="left:7.7%;width:23.1%">wk 3-8</div>
+            </div></div>
+            <div class="implrow"><div class="irlabel">Fase 3<small>KP1 · planning</small></div><div class="irtrack">
+              <div class="irbar f3" style="left:30.8%;width:15.4%">pilot SMT</div>
+              <div class="irbar f3b" style="left:46.2%;width:3.8%" title="evaluatie wk 13"></div>
+              <div class="irbar f3" style="left:50%;width:19.2%">uitrol THT</div>
+            </div></div>
+            <div class="implrow"><div class="irlabel">Fase 4<small>KP4 · shopfloor</small></div><div class="irtrack">
+              <div class="irbar f4" style="left:69.2%;width:15.4%">pilot</div>
+              <div class="irbar f4b" style="left:84.6%;width:3.8%" title="evaluatie wk 23"></div>
+              <div class="irbar f4" style="left:88.5%;width:11.5%">definitief</div>
+            </div></div>
+          </div>
+        </div>
+        <button class="bp-share" data-bp-share="implementatie">Deel deze afbeelding op publieksscherm</button>
+
+        <table style="margin-top:16px">
+          <tr><th>Fase</th><th>Kernprobleem</th><th>Projectleider / functioneel eigenaar</th><th>Doorlooptijd</th><th>KPI / streefwaarde</th></tr>
+          <tr><td>0</td><td>Voorbereiding &amp; draagvlak</td><td>Senn Lauwers / Operations Manager</td><td>Weken 1-2</td><td>Kwalitatief: bevestiging bij kick-off</td></tr>
+          <tr><td>1</td><td>KP3 - afroeporders (spoedtraject)</td><td>Senn Lauwers / Sales Manager</td><td>Weken 1-4</td><td>0 fouten bij eindtest; go-live uiterlijk week 4</td></tr>
+          <tr><td>2</td><td>KP2 - capaciteitsparameters</td><td>Senn Lauwers / Productie Manager</td><td>Weken 3-8</td><td>WMAPE gerealiseerd vs. beschikbaar stabiel &lt;20% per afdeling</td></tr>
+          <tr><td>3</td><td>KP1 - planningsniveau (pilot SMT &rarr; uitrol THT)</td><td>Senn Lauwers / Productie Manager</td><td>Weken 9-18</td><td>WMAPE THT &le;37% na pilot; &le;10% per afdeling na uitrol</td></tr>
+          <tr><td>4</td><td>KP4 - shopfloor sturing</td><td>Senn Lauwers / Productie Manager + teamleads SMT &amp; THT</td><td>Weken 19-26</td><td>Schedule Adherence 29,53% &rarr; &ge;85%</td></tr>
+        </table>
+        <p class="note">Volgorde is onderbouwd, niet willekeurig: KP2 gaat vóór KP1 (verfijnde planning bovenop onjuiste capaciteitsdata levert schijnnauwkeurigheid op), KP4 staat als laatste (grootste weerstandsrisico, beheersbaarder na zichtbare resultaten elders), KP3 loopt als spoedtraject parallel aan Fase 0 (al in eindtestfase, geen nieuwe ontwerpkeuzes meer nodig).</p>
+
+        <h4 style="margin-top:18px">Weerstandsrisico per fase (Knoster, 1991)</h4>
+        <table>
+          <tr><th>Fase</th><th>Risicovol element</th><th>Hoe opgevangen</th></tr>
+          <tr><td>0</td><td>Visie + belang (alle vier kernproblemen tegelijk)</td><td>Expliciete kick-off met alle betrokkenen; Operations Manager als opdrachtgever</td></tr>
+          <tr><td>1 - KP3</td><td>Belang bij Sales</td><td>Livegang getoetst aan een concreet klantgeval, voordeel (betrouwbaardere leverafspraken) expliciet gemaakt</td></tr>
+          <tr><td>2 - KP2</td><td>Plan (ontbrekend eigenaarschap)</td><td>Vaste kwartaalcyclus + expliciet eigenaarschap bij de Productie Manager</td></tr>
+          <tr><td>3 - KP1</td><td>Belang + middelen (extra plantijd)</td><td>Pilot op SMT (kleinste, minst complexe afdeling) + structureel geborgde planningstijd</td></tr>
+          <tr><td>4 - KP4</td><td>Belang bij teamleads (ervaren autonomieverlies)</td><td>Participatieve inrichting van de Shopfloor-module, pilotvorm met evaluatie</td></tr>
+        </table>
+        <p class="note">Organisatiecultuur (kleurenmodel De Caluwé &amp; Vermaak, 2015, zie tab "Caluwé"): dominant groen (46,7%, n=9). Een groene cultuur vraagt participatief veranderingsmanagement - daarom is elke fase een pilot met expliciet evaluatiemoment, niet een top-down opgelegd protocol.</p>
+
+        <h4 style="margin-top:18px">Kosten-baten (Bijlage 18)</h4>
+        <table>
+          <tr><th>Fase</th><th>Uren</th><th>Kosten</th></tr>
+          <tr><td>0 - Voorbereiding</td><td>20</td><td>€816</td></tr>
+          <tr><td>1 - KP3 livegang</td><td>22</td><td>€903</td></tr>
+          <tr><td>2 - KP2 capaciteit</td><td>36</td><td>€1.448</td></tr>
+          <tr><td>3 - KP1 planning</td><td>76</td><td>€2.965</td></tr>
+          <tr><td>4 - KP4 shopfloor</td><td>64</td><td>€2.477</td></tr>
+          <tr><td><b>Totaal eenmalig</b></td><td><b>218</b></td><td><b>€8.609</b></td></tr>
+        </table>
+        <p class="note">Structureel na implementatie: <b>€5.939 per jaar</b> (dagelijkse standup teamleads SMT/THT en Productie Manager, kwartaalcyclus capaciteitsparameters, scriptbeheer en back-up in Ridder iQ). Uurtarieven zijn volledig belaste loonkosten (€37,62-€48,64), gevalideerd door de Operations Manager (bron: gesprek Operations Manager; Kosten analyse.xlsx). De baat is bewust niet in euro's uitgedrukt: het advies ontsluit bestaande, nu onbenutte planningscapaciteit (Schedule Adherence nu 29,53%, gemiddelde dagelijkse afwijking THT 25,65 uur) - het creëert geen nieuwe capaciteit. Dat vraagt een vervolgmeting na implementatie.</p>
+
+        <div class="bp-flag">Twee borgingspunten, los van de fasering: (1) extra planningstijd voor de Productie Manager moet structureel zijn ingepast vóór de start van Fase 3, anders valt de verfijning terug naar groepsniveau zodra de werkdruk toeneemt. (2) Scriptbeheer in Ridder iQ (kalenderbeheer + wisselen van bewerkingen tussen werkstations) niet laten steunen op één persoon - naast Senn Lauwers moet een software engineer als back-up formeel zijn vastgelegd.</div>
+        <div class="bp-src">Bron: Adviesrapport Productieplanning 2.0, §6.1-6.4 (Tabel 18-24) en Bijlage 18 Onderbouwing implementatiekosten (Tabel 31-37).</div>
       </div>
 
       <div class="bp-sec" id="bp-bv">
@@ -1306,6 +1824,7 @@
         </table>
         <div class="bp-src">Bron: Adviesrapport Productieplanning 2.0, Bijlage 8 Betrouwbaarheid en validiteit (Tabel 27).</div>
       </div>
+
 
       <div class="bp-sec" id="bp-qa">
         <h4>5 waarschijnlijke vragen met ankerantwoord</h4>
@@ -1334,6 +1853,9 @@
     </div>
   </div>
 </div>
+
+<!-- ===== Publieksscherm: losse afbeelding-overlay, alleen gevuld via "Deel deze afbeelding" ===== -->
+<div id="audienceFig"><div class="fig-inner" id="audienceFigInner"></div></div>
 
 <script>
 (function(){
@@ -1386,7 +1908,10 @@
       lockInput.focus();
     }
   }
-  function closeBackup(){backupPanel.classList.remove('open');}
+  function closeBackup(){
+    backupPanel.classList.remove('open');
+    if(sharedFigure){sharedFigure=null;sendBpShareStop();setShareButtonsUI();}
+  }
 
   if(lockBtn)lockBtn.addEventListener('click',tryUnlock);
   if(lockInput)lockInput.addEventListener('keydown',e=>{
@@ -1400,6 +1925,39 @@
       document.querySelectorAll('.bp-sec').forEach(s=>s.classList.remove('active'));
       tab.classList.add('active');
       document.getElementById('bp-'+tab.dataset.bp).classList.add('active');
+    });
+  });
+
+  // Delen naar publieksscherm: elke figuur heeft een eigen knop die alleen díe ene
+  // afbeelding toont op het publieksscherm - los van wat de presentator zelf bekijkt.
+  let sharedFigure=null;
+  function setShareButtonsUI(){
+    document.querySelectorAll('[data-bp-share]').forEach(btn=>{
+      const on=btn.dataset.bpShare===sharedFigure;
+      btn.classList.toggle('live',on);
+      btn.textContent=on?'Wordt getoond - klik om te stoppen':'Deel deze afbeelding op publieksscherm';
+    });
+  }
+  function sendBpShare(tab){
+    if(!audienceWin||audienceWin.closed)return;
+    audienceWin.postMessage({type:'bp-share',open:true,tab:tab},'*');
+  }
+  function sendBpShareStop(){
+    if(!audienceWin||audienceWin.closed)return;
+    audienceWin.postMessage({type:'bp-share',open:false},'*');
+  }
+  document.querySelectorAll('[data-bp-share]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      if(!audienceWin||audienceWin.closed){alert('Open eerst het publieksscherm (knop "Open publieksscherm").');return;}
+      const tab=btn.dataset.bpShare;
+      if(sharedFigure===tab){
+        sharedFigure=null;
+        sendBpShareStop();
+      } else {
+        sharedFigure=tab;
+        sendBpShare(tab);
+      }
+      setShareButtonsUI();
     });
   });
   const pbCounter=document.getElementById('pbCounter');
@@ -1425,7 +1983,7 @@
     const steps=[];
     const groups={};
     const isStep=el=>el.classList.contains('fragment')||
-      el.matches('[data-bar],.kpnode,[data-exp],.phase,[data-th],.caluwe,[data-kn]');
+      el.matches('[data-bar],[data-exp],.phase,[data-th],.caluwe.dom,[data-kn]');
     const walker=document.createTreeWalker(slide,NodeFilter.SHOW_ELEMENT,null);
     let node;
     while(node=walker.nextNode()){
@@ -1446,15 +2004,10 @@
       step.classList.add('vis');
     } else if(step.matches('[data-bar]')||step.matches('[data-exp]')||step.matches('.phase')){
       step.classList.add('open');
-    } else if(step.matches('.kpnode')){
-      const kluwenTexts={'1':'KP 1 - Er wordt gepland op bewerkingsgroepniveau in plaats van op werkstationniveau, waardoor capaciteitsknelpunten onzichtbaar blijven.','2':'KP 2 - De beschikbare capaciteit in Ridder iQ klopt niet: er wordt tegen oneindige capaciteit gepland, zonder verzuim, stilstand of flexibele inzet.','3':'KP 3 - Afroeporders worden foutief verwerkt: alle uren op één vroege datum, wat schijncapaciteit oplevert (33,7% van de uren).','4':'KP 4 - Er is geen visuele prioriteit op de werkvloer; prioriteiten zijn mondeling en persoonsafhankelijk (Schedule Adherence 29,53%).'};
-      document.querySelectorAll('.kpnode').forEach(n=>n.classList.remove('sel'));
-      step.classList.add('sel');
-      const kluwenDetail=document.getElementById('kluwenDetail');
-      if(kluwenDetail){
-        kluwenDetail.textContent=kluwenTexts[step.dataset.kp];
-        kluwenDetail.classList.add('vis');
-      }
+    } else if(step.matches('.caluwe.dom')){
+      step.classList.add('hi');
+      const row=step.closest('.caluwerow');
+      if(row)row.classList.add('dom-on');
     }
   }
 
@@ -1463,20 +2016,31 @@
       step.classList.remove('vis');
     } else if(step.matches('[data-bar]')||step.matches('[data-exp]')||step.matches('.phase')){
       step.classList.remove('open');
-    } else if(step.matches('.kpnode')){
-      step.classList.remove('sel');
-      const kluwenDetail=document.getElementById('kluwenDetail');
-      if(kluwenDetail&&!document.querySelector('.kpnode.sel'))kluwenDetail.classList.remove('vis');
-    } else if(step.matches('[data-th]')||step.matches('.caluwe')||step.matches('[data-kn]')){
+    } else if(step.matches('.caluwe.dom')){
+      step.classList.remove('hi');
+      const row=step.closest('.caluwerow');
+      if(row)row.classList.remove('dom-on');
+    } else if(step.matches('[data-th]')||step.matches('[data-kn]')){
       step.classList.remove('vis');
     }
   }
+
+  const kpLabels=['Te grof niveau','Capaciteit','Afroeporders','Visuele prioriteit'];
 
   function updateChrome(){
     const slide=slides[cur];
     const phase=slide.dataset.phase;
     const cover=slide.classList.contains('cover-slide');
     document.body.classList.toggle('cover',cover);
+
+    const kpnav=slide.querySelector('.kpnav');
+    if(kpnav){
+      const activeKp=slide.dataset.kp;
+      kpnav.innerHTML=kpLabels.map((lab,i)=>{
+        const n=i+1;
+        return `<div class="kpn${n==activeKp?' active':''}"><span class="n">KP ${n}</span><span class="t">${lab}</span></div>`;
+      }).join('');
+    }
 
     if(phase&&phase!=='done'){
       pdoveEl.style.visibility='visible';
@@ -1596,6 +2160,22 @@
       if(!audienceWin)alert('Kan het publieksscherm niet openen. Sta pop-ups toe voor dit bestand.');
     });
 
+    // Formaat publieksscherm: Auto (past zich vanzelf aan), Monitor (gecentreerd)
+    // of TV (breedbeeld, bovenaan uitgelijnd zodat de logo's de titel niet raken).
+    const FMTS=['auto','monitor','tv'];
+    const FMT_LBL={auto:'Auto',monitor:'Monitor',tv:'TV'};
+    const pbScreenFmt=document.getElementById('pbScreenFmt');
+    let screenFmt=localStorage.getItem('audienceScreenFmt')||'auto';
+    function renderFmtBtn(){if(pbScreenFmt)pbScreenFmt.textContent='Scherm: '+FMT_LBL[screenFmt];}
+    function sendScreenFmt(){if(audienceWin&&!audienceWin.closed)audienceWin.postMessage({type:'screen-fmt',fmt:screenFmt},'*');}
+    renderFmtBtn();
+    if(pbScreenFmt)pbScreenFmt.addEventListener('click',()=>{
+      screenFmt=FMTS[(FMTS.indexOf(screenFmt)+1)%FMTS.length];
+      localStorage.setItem('audienceScreenFmt',screenFmt);
+      renderFmtBtn();
+      sendScreenFmt();
+    });
+
     window.addEventListener('message',e=>{
       const d=e.data;
       if(!d)return;
@@ -1603,6 +2183,7 @@
         audienceWin=e.source;
         setLinkStatus(true);
         broadcastState();
+        sendScreenFmt();
       } else if(d.type==='audience-key'){
         handleKey(d.key,d.ctrl);
       }
@@ -1617,14 +2198,52 @@
 
   function setupAudienceSync(){
     if(window.opener)window.opener.postMessage({type:'audience-ready'},'*');
+    const figOverlay=document.getElementById('audienceFig');
+    const figInner=document.getElementById('audienceFigInner');
+
+    // Schermformaat: Auto kiest zelf tussen Monitor en TV op basis van de
+    // verhouding van dit scherm; Monitor en TV zijn handmatig vast te zetten.
+    let fmtPref=localStorage.getItem('audienceScreenFmt')||'auto';
+    function detectFmt(){
+      const r=window.innerWidth/window.innerHeight;
+      return (r>=1.9||(r>=1.7&&window.innerHeight<820))?'tv':'monitor';
+    }
+    function applyFmt(){
+      const eff=fmtPref==='auto'?detectFmt():fmtPref;
+      document.body.classList.toggle('screen-tv',eff==='tv');
+      document.body.classList.toggle('screen-monitor',eff==='monitor');
+    }
+    applyFmt();
+    window.addEventListener('resize',()=>{if(fmtPref==='auto')applyFmt();});
+
     window.addEventListener('message',e=>{
       const d=e.data;
-      if(!d||d.type!=='deck-sync')return;
-      deck.innerHTML=d.html;
-      slides.length=0;
-      slides.push(...document.querySelectorAll('.slide'));
-      cur=Math.max(0,Math.min(d.cur,d.total-1));
-      updateChrome();
+      if(!d)return;
+      if(d.type==='screen-fmt'){
+        fmtPref=d.fmt||'auto';
+        localStorage.setItem('audienceScreenFmt',fmtPref);
+        applyFmt();
+        return;
+      }
+      if(d.type==='deck-sync'){
+        deck.innerHTML=d.html;
+        slides.length=0;
+        slides.push(...document.querySelectorAll('.slide'));
+        cur=Math.max(0,Math.min(d.cur,d.total-1));
+        updateChrome();
+      } else if(d.type==='bp-share'){
+        if(d.open){
+          const src=document.querySelector('[data-fig="'+d.tab+'"]');
+          if(src){
+            figInner.innerHTML='';
+            figInner.appendChild(src.cloneNode(true));
+            figOverlay.classList.add('open');
+          }
+        } else {
+          figOverlay.classList.remove('open');
+          figInner.innerHTML='';
+        }
+      }
     });
   }
 
